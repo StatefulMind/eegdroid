@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="General">
+
+
+        <Preference
+            android:key="show_legal"
+            android:summary="https://www.traumschreiber.uni-osnabrueck.de/impressum.html"
+            android:title="@string/aboutlegaltext">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://www.traumschreiber.uni-osnabrueck.de/impressum.html" />
+        </Preference>
+
+
+        <de.uni_osnabrueck.traumschreiber.somnium.ServerAddressEditTextPreference
+            android:id="@+id/serverAddressTextPreference"
+            android:defaultValue="@string/defaultServerAddress"
+            android:dialogTitle="Specify the remote server: "
+            android:inputType="textUri"
+            android:key="serverAddress"
+            android:negativeButtonText="Reset to default"
+            android:persistent="true"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary=""
+            android:title="Server Address" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="auto_record_stop"
+            android:persistent="true"
+            android:summary="Use your alarm clock to schedule a recording stop automatically."
+            android:title="Automated recording stop" />
+
+        <Preference
+            android:key="show_Traumschreiber_demo_test"
+            android:summary="Test your Traumschreiber functionality."
+            android:title="Traumschreiber Demo">
+
+            <intent android:action="de.uos.somniumeeg.somniumeeg.ui.DemoActivity" />
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="User Information">
+
+        <ListPreference
+            android:defaultValue="Other"
+            android:dialogTitle="Please select your gender:"
+            android:entries="@array/gender"
+            android:entryValues="@array/gender"
+            android:key="gender"
+            android:persistent="true"
+            android:summary="%s"
+            android:title="Gender:" />
+
+        <de.uni_osnabrueck.traumschreiber.somnium.NumberPickerPreference
+            android:defaultValue="1980"
+            android:dialogTitle="Select your birth year"
+            android:key="birth_year"
+            android:summary=""
+            android:title="Year of birth" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

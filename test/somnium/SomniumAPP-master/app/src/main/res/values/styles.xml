@@ -1,0 +1,30 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+
+        <!--  theme customization -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:dialogTheme">@style/DialogStyle</item>
+        <item name="android:alertDialogTheme">@style/DialogStyle</item>
+
+        <item name="android:textColorHighlight">@color/colorAccent</item>
+
+    </style>
+
+    <!--Styling the Popup Dialogs-->
+    <style name="DialogStyle" parent="android:Theme.Material.Dialog">
+        <item name="android:colorAccent">@color/colorAccent</item>
+        <item name="colorControlNormal">@color/colorAccent</item>
+        <item name="colorControlActivated">@color/colorAccent</item>
+        <item name="colorControlHighlight">@color/colorAccent</item>
+        <item name="android:textColorHighlight">@color/colorAccent</item>
+    </style>
+
+    <!--define fullscreen theme-->
+    <style name="FullscreenTheme" parent="Theme.AppCompat.NoActionBar" />
+
+</resources>

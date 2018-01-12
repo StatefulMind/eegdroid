@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="de.uni_osnabrueck.traumschreiber.somnium.MainActivity">
+    <item
+        android:icon="@drawable/menu"
+        android:title="@string/settings"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:icon="@drawable/ic_info_outline_white_36dp"
+                android:onClick="replayIntroActivity"
+                android:title="@string/instructions">
+
+            </item>
+            <item
+                android:icon="@drawable/assignment_white_48x48"
+                android:onClick="showSurvey"
+                android:title="@string/survey">
+
+            </item>
+            <item
+                android:icon="@drawable/ic_pulse_white_48dp"
+                android:onClick="showAboutActivity"
+                android:title="@string/about_alp">
+
+            </item>
+            <item
+                android:icon="@drawable/ic_settings_white_36dp"
+                android:onClick="showSettingsActivity"
+                android:title="@string/settings">
+            </item>
+        </menu>
+    </item>
+</menu>

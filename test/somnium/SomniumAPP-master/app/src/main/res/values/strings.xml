@@ -1,0 +1,82 @@
+<resources>
+    <!--Menu-->
+    <string name="app_name">Somnium</string>
+    <string name="settings">Settings</string>
+    <string name="about_alp">About</string>
+    <string name="instructions">Instructions</string>
+
+
+    <!--About Activity-->
+    <string name="the_alp_project">The Traumschreiber project</string>
+    <string name="contact_information">Contact Information</string>
+    <string name="aboutLegalText">Licence and privacy policy</string>
+    <string name="ContactInfo">Kristoffer Appel\nWachsbleiche 27\n49090
+        Osnabrück\nGermany\n\nTelephone: +495419697090\nEmail: wwwalp@uos.de
+    </string>
+    <string name="alpInfo">The Traumschreiber project, started at the
+        <a href="http://www.traumschreiber.uni-osnabrueck.de">University of Osnabrück</a> by Appel,
+        Leugering and Pipa and has the goal to  provide open source hard- and software for novel and
+        large-scale sleep experiments and field studies.\nThis App is provided for you to
+        interact with your Traumschreiber sleep mask and to carry out and take part in Sleep
+        experiments.\n\nWe hope you enjoy our product!
+        \nLegal: <a href="https://www.traumschreiber.uni-osnabrueck.de/impressum.html">Licence and privacy policy</a>
+    </string>
+
+    <!--Connection Fragment-->
+    <string name="unknown_device">Unknown device</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="ble_not_supported">BLE is not supported!</string>
+    <string name="select_your_traumschreiber">Select your Traumschreiber:</string>
+    <string name="discover_a_traumschreiber">Press to discover</string>
+
+    <!--Data Fragment-->
+    <string name="heartrate">Heart Rate</string>
+    <string name="status_disconnected">Disconnected</string>
+    <string name="connect_to_a_device">Connect to a device!</string>
+
+
+    <!--Text for App Intro slides-->
+    <string name="app_intro">Introduction</string>
+    <string name="slide_1_title">Welcome</string>
+    <string name="slide_1_text">Welcome to Somnium, this App complements and controls your Traumschreiber Sleep Mask.</string>
+    <string name="slide_2_title">Somnium</string>
+    <string name="slide_2_text"> The Traumschreiber project, started at the University of Osnabrück by Appel,
+        Leugering and Pipa and has the goal to provide open source hard- and software for novel and
+        large-scale sleep experiments and field studies.\nTake part in scientific sleep experiments,
+        inspect your own live EEG and get the chance to manipulate your dreams.</string>
+    <string name="slide_3_title">Stay charged !</string>
+    <string name="slide_3_text">Remember to plug in your phone while recording with your Traumschreiber over night.</string>
+    <string name="slide_4_text">Take a short moment to learn about your sleep mask and get instructions on how to use it correctly.</string>
+
+
+    <!--Tutorial youtube link id-->
+    <string name="youtubeplayerplaceholdertext">
+        <a href="https://youtu.be/2cmF0D_m2iM">Watch instructions video</a></string>
+    <string name="instructionsVideoId">2cmF0D_m2iM</string>
+    <string name="survey">Survey</string>
+    <string name="to_later_change_your_data_visit_the_app_settings">To later change your Data visit the app settings!</string>
+    <string name="permissionwarning">If you are using Android Version 6.0 or higher you will be asked to grant additional user permissions which are necessary to run this app!</string>
+    <string name="disconnect">Disconnect</string>
+
+
+    <!--Preference Strings + user setup-->
+    <string name="defaultServerAddress">https://www.traumschreiber.uni-osnabrueck.de//</string>
+    <string name="aboutlegaltext">Licence and privacy policy</string>
+    <string name="intersex">Intersex</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+    <string name="year_of_birth">Year of birth:</string>
+    <string name="confirm_data">Confirm data</string>
+    <string name="gender">Gender:</string>
+    <string name="please_select">Please select:</string>
+
+    <!--Preference options for gender-->
+    <string-array name="gender">
+        <item>Male</item>
+        <item>Female</item>
+        <item>Intersex</item>
+    </string-array>
+
+
+</resources>
