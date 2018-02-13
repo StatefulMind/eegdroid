@@ -151,7 +151,8 @@ public class BluetoothLeService extends Service {
 
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
 
-
+                // TODO: Understand incoming data, is it already in microVolts? Ask Johannes
+                // TODO: Probably better to append the values into the n-dimensional array here?
                 //log incoming data:
                 StringBuilder stringBuilder1 = new StringBuilder(data_int.length);
                 for (int datapoint : data_int) {

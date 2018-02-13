@@ -242,6 +242,7 @@ public class DeviceControlActivity extends Activity {
 
     private void displayData(String data) {
         if (data != null) {
+            // data format example: +01012 -00234 +01374 -01516 +01656 +01747 +00131 -00351
             // TODO: Transform the string of values into a useful n-dimensional array, append new
             // TODO: Try to plot the array
             INDArray nd = Nd4j.create(new float[]{1,2,3,4},new int[]{2,2});
