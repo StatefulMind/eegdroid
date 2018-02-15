@@ -154,7 +154,8 @@ public class BluetoothLeService extends Service {
                 //We have to decompress the EEG-Data here. This is done by TraumschreiberService.decompress();
                 float[] data_int = TraumschreiberService.decompress(data);
                 INDArray nd = Nd4j.create(data_int, new int[]{1,8});
-                data_array = Nd4j.vstack(data_array, nd);
+                INDArray data_microV = dataToMicroVolts(nd);
+                data_array = Nd4j.vstack(data_array, data_microV);
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
 
                 // TODO: Understand incoming data, is it already in microVolts? Check Johannes email
@@ -187,6 +188,18 @@ public class BluetoothLeService extends Service {
             }
         }
         sendBroadcast(intent);
+    }
+    private INDArray dataToMicroVolts(INDArray data) {
+//        V_in = X*1.65V/(1000 * GAIN * 2048)
+        // Assuming GAIN = 64
+        float denominator = 1000 * 64 * 2048;
+//        float denominator = 1000;
+        INDArray nominator = data.mul(1650000);
+        INDArray result = nominator.div(denominator);
+        return result;
+//        for (float datapoint : data) {
+//
+//        }
     }
 
     public class LocalBinder extends Binder {
