@@ -35,9 +35,6 @@ import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -242,7 +239,7 @@ public class DeviceControlActivity extends Activity {
 
     private void displayData(String data) {
         if (data != null) {
-            // data format example: +01012 -00234 +01374 -01516 +01656 +01747 +00131 -00351
+            // raw data format example: +01012 -00234 +01374 -01516 +01656 +01747 +00131 -00351
             mDataField.setText(data); // print the n-dimensional array after the data
         }
     }
