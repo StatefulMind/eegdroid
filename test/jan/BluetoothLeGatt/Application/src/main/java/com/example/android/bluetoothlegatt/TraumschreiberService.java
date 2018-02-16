@@ -38,16 +38,16 @@ public class TraumschreiberService {
      * @param data_bytes
      * @return int[] data_ints of the datapoint values as integers
      */
-    public static float[] decompress(byte[] data_bytes) {
+    public static int[] decompress(byte[] data_bytes) {
         int bytelengthDatapoint = 2;
-        float[] data_ints = new float[data_bytes.length / bytelengthDatapoint];
+        int[] data_ints = new int[data_bytes.length / bytelengthDatapoint];
         Log.d("Decompressing", "decompress: "+String.format("%02X %02X ", data_bytes[0], data_bytes[1]));
 
 
         //https://stackoverflow.com/questions/9581530/converting-from-byte-to-int-in-java
         //Example: rno[0]&0x000000ff)<<24|(rno[1]&0x000000ff)<<16|
         for(int i = 0; i < data_bytes.length /bytelengthDatapoint; i++) {
-            float new_int = (data_bytes[i*bytelengthDatapoint + 1]) << 8 | (data_bytes[i*bytelengthDatapoint + 0])&0xff;
+            int new_int = (data_bytes[i*bytelengthDatapoint + 1]) << 8 | (data_bytes[i*bytelengthDatapoint + 0])&0xff;
             //new_int = new_int << 8;
             data_ints[i] = new_int;
         }

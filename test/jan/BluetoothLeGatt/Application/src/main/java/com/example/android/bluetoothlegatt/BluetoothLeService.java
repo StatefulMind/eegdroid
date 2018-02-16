@@ -35,9 +35,6 @@ import android.util.Log;
 import java.util.List;
 import java.util.UUID;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
  * given Bluetooth LE device.
@@ -50,8 +47,6 @@ public class BluetoothLeService extends Service {
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
-
-    private INDArray data_array = Nd4j.create(new int[]{1,8});
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -152,15 +147,14 @@ public class BluetoothLeService extends Service {
 
             if (data != null && data.length > 0) {
                 //We have to decompress the EEG-Data here. This is done by TraumschreiberService.decompress();
-                float[] data_int = TraumschreiberService.decompress(data);
-                INDArray nd = Nd4j.create(data_int, new int[]{1,8});
-                INDArray data_microV = dataToMicroVolts(nd);
-                data_array = Nd4j.vstack(data_array, data_microV);
+                int[] data_int = TraumschreiberService.decompress(data);
+
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
 
-                // TODO: Understand incoming data, is it already in microVolts? Check Johannes email
+
+                //log incoming data:
                 StringBuilder stringBuilder1 = new StringBuilder(data_int.length);
-                for (float datapoint : data_int) {
+                for (int datapoint : data_int) {
                     stringBuilder1.append(String.format("%+06d ", datapoint));
                 }
                 Log.d(TAG, String.format("Received EEG Signal " + stringBuilder1.toString()));
@@ -188,13 +182,6 @@ public class BluetoothLeService extends Service {
             }
         }
         sendBroadcast(intent);
-    }
-    private INDArray dataToMicroVolts(INDArray data) {
-        // Conversion formula: V_in = X*1.65V/(1000 * GAIN * 2048)
-        // Assuming GAIN = 64
-        float denominator = 1000 * 64 * 2048;
-        INDArray result = (data.mul(1650000)).div(denominator);
-        return result;
     }
 
     public class LocalBinder extends Binder {
