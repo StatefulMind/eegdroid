@@ -647,289 +647,213 @@ public class DeviceControlActivity extends Activity {
 
     }
 
+    ArrayList<Entry> lineEntries = new ArrayList<Entry>();
+    int count = 0;
+
     public void addEntry(float f) {
 
-        LineData data1 = mChart1.getData();
+        lineEntries.add(new Entry(count,f));
 
+        count = count+1;
 
-        if (data1 != null) {
+        LineDataSet set1 = createSet(lineEntries);
+        //new LineDataSet(lineEntries,"legend");
 
-            ILineDataSet set1 = data1.getDataSetByIndex(0);
+        LineData data1 = new LineData(set1);
 
-            // set.addEntry(...); // can be called as well
+        data1.notifyDataChanged();
+        mChart1.setData(data1);
 
-            if (set1 == null) {
-                set1 = createSet();
-                data1.addDataSet(set1);
-            }
+        mChart1.notifyDataSetChanged();
 
-            data1.addEntry(new Entry(set1.getEntryCount(), f), 0);
-            data1.notifyDataChanged();
+        // limit the number of visible entries
+        mChart1.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart1.notifyDataSetChanged();
-
-            // limit the number of visible entries
-            mChart1.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart1.moveViewToX(data1.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
+        // move to the latest entry
+        mChart1.moveViewToX(data1.getEntryCount());
+        
     }
+
+    ArrayList<Entry> lineEntries2 = new ArrayList<Entry>();
+    int count2 = 0;
 
     public void addEntry2(float f) {
 
-        LineData data2 = mChart2.getData();
+        lineEntries2.add(new Entry(count2,f));
 
+        count2 = count2+1;
 
-        if (data2 != null) {
+        LineDataSet set2 = createSet2(lineEntries2);
+        //new LineDataSet(lineEntries2,"legend");
 
-            ILineDataSet set2 = data2.getDataSetByIndex(0);
+        LineData data2 = new LineData(set2);
 
-            // set.addEntry(...); // can be called as well
+        data2.notifyDataChanged();
+        mChart2.setData(data2);
 
-            if (set2 == null) {
-                set2 = createSet2();
-                data2.addDataSet(set2);
-            }
+        mChart2.notifyDataSetChanged();
 
-            data2.addEntry(new Entry(set2.getEntryCount(), f), 0);
-            data2.notifyDataChanged();
+        // limit the number of visible entries
+        mChart2.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart2.notifyDataSetChanged();
+        // move to the latest entry
+        mChart2.moveViewToX(data2.getEntryCount());
 
-            // limit the number of visible entries
-            mChart2.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart2.moveViewToX(data2.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
     }
+
+    ArrayList<Entry> lineEntries3 = new ArrayList<Entry>();
+    int count3 = 0;
 
     public void addEntry3(float f) {
 
-        LineData data3 = mChart3.getData();
+        lineEntries3.add(new Entry(count3,f));
 
+        count3 = count3+1;
 
-        if (data3 != null) {
+        LineDataSet set3 = createSet3(lineEntries3);
 
-            ILineDataSet set3 = data3.getDataSetByIndex(0);
+        LineData data3 = new LineData(set3);
 
-            // set.addEntry(...); // can be called as well
+        data3.notifyDataChanged();
+        mChart3.setData(data3);
 
-            if (set3 == null) {
-                set3 = createSet3();
-                data3.addDataSet(set3);
-            }
+        mChart3.notifyDataSetChanged();
 
-            data3.addEntry(new Entry(set3.getEntryCount(), f), 0);
-            data3.notifyDataChanged();
+        // limit the number of visible entries
+        mChart3.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart3.notifyDataSetChanged();
-
-            // limit the number of visible entries
-            mChart3.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart3.moveViewToX(data3.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
+        // move to the latest entry
+        mChart3.moveViewToX(data3.getEntryCount());
     }
+
+    ArrayList<Entry> lineEntries4 = new ArrayList<Entry>();
+    int count4 = 0;
 
     public void addEntry4(float f) {
 
-        LineData data4 = mChart4.getData();
+        lineEntries4.add(new Entry(count4,f));
 
+        count4 = count4+1;
 
-        if (data4 != null) {
+        LineDataSet set4 = createSet4(lineEntries4);
 
-            ILineDataSet set4 = data4.getDataSetByIndex(0);
+        LineData data4 = new LineData(set4);
 
-            // set.addEntry(...); // can be called as well
+        data4.notifyDataChanged();
+        mChart4.setData(data4);
 
-            if (set4 == null) {
-                set4 = createSet4();
-                data4.addDataSet(set4);
-            }
+        mChart4.notifyDataSetChanged();
 
-            data4.addEntry(new Entry(set4.getEntryCount(), f), 0);
-            data4.notifyDataChanged();
+        // limit the number of visible entries
+        mChart4.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart4.notifyDataSetChanged();
-
-            // limit the number of visible entries
-            mChart4.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart4.moveViewToX(data4.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
+        // move to the latest entry
+        mChart4.moveViewToX(data4.getEntryCount());
     }
+
+    ArrayList<Entry> lineEntries5 = new ArrayList<Entry>();
+    int count5 = 0;
 
     public void addEntry5(float f) {
 
-        LineData data5 = mChart5.getData();
+        lineEntries5.add(new Entry(count5,f));
 
+        count5 = count5+1;
 
-        if (data5 != null) {
+        LineDataSet set5 = createSet5(lineEntries5);
 
-            ILineDataSet set5 = data5.getDataSetByIndex(0);
+        LineData data5 = new LineData(set5);
 
-            // set.addEntry(...); // can be called as well
+        data5.notifyDataChanged();
+        mChart5.setData(data5);
 
-            if (set5 == null) {
-                set5 = createSet5();
-                data5.addDataSet(set5);
-            }
+        mChart5.notifyDataSetChanged();
 
-            data5.addEntry(new Entry(set5.getEntryCount(), f), 0);
-            data5.notifyDataChanged();
+        // limit the number of visible entries
+        mChart5.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart5.notifyDataSetChanged();
-
-            // limit the number of visible entries
-            mChart5.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart5.moveViewToX(data5.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
+        // move to the latest entry
+        mChart5.moveViewToX(data5.getEntryCount());
     }
+
+    ArrayList<Entry> lineEntries6 = new ArrayList<Entry>();
+    int count6 = 0;
 
     public void addEntry6(float f) {
 
-        LineData data6 = mChart6.getData();
+        lineEntries6.add(new Entry(count6,f));
 
+        count6 = count6+1;
 
-        if (data6 != null) {
+        LineDataSet set6 = createSet6(lineEntries6);
 
-            ILineDataSet set6 = data6.getDataSetByIndex(0);
+        LineData data6 = new LineData(set6);
 
-            // set.addEntry(...); // can be called as well
+        data6.notifyDataChanged();
+        mChart6.setData(data6);
 
-            if (set6 == null) {
-                set6 = createSet6();
-                data6.addDataSet(set6);
-            }
+        mChart6.notifyDataSetChanged();
 
-            data6.addEntry(new Entry(set6.getEntryCount(), f), 0);
-            data6.notifyDataChanged();
+        // limit the number of visible entries
+        mChart6.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart6.notifyDataSetChanged();
-
-            // limit the number of visible entries
-            mChart6.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart6.moveViewToX(data6.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
+        // move to the latest entry
+        mChart6.moveViewToX(data6.getEntryCount());
     }
+
+    ArrayList<Entry> lineEntries7 = new ArrayList<Entry>();
+    int count7 = 0;
 
     public void addEntry7(float f) {
 
-        LineData data7 = mChart7.getData();
+        lineEntries7.add(new Entry(count7,f));
 
+        count7 = count7+1;
 
-        if (data7 != null) {
+        LineDataSet set7 = createSet7(lineEntries7);
 
-            ILineDataSet set7 = data7.getDataSetByIndex(0);
+        LineData data7 = new LineData(set7);
 
-            // set.addEntry(...); // can be called as well
+        data7.notifyDataChanged();
+        mChart7.setData(data7);
 
-            if (set7 == null) {
-                set7 = createSet7();
-                data7.addDataSet(set7);
-            }
+        mChart7.notifyDataSetChanged();
 
-            data7.addEntry(new Entry(set7.getEntryCount(), f), 0);
-            data7.notifyDataChanged();
+        // limit the number of visible entries
+        mChart7.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart7.notifyDataSetChanged();
-
-            // limit the number of visible entries
-            mChart7.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart7.moveViewToX(data7.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
+        // move to the latest entry
+        mChart7.moveViewToX(data7.getEntryCount());
     }
+
+    ArrayList<Entry> lineEntries8 = new ArrayList<Entry>();
+    int count8 = 0;
 
     public void addEntry8(float f) {
 
-        LineData data8 = mChart8.getData();
+        lineEntries8.add(new Entry(count8,f));
 
+        count8 = count8+1;
 
-        if (data8 != null) {
+        LineDataSet set8 = createSet8(lineEntries8);
 
-            ILineDataSet set8 = data8.getDataSetByIndex(0);
+        LineData data8 = new LineData(set8);
 
-            // set.addEntry(...); // can be called as well
+        data8.notifyDataChanged();
+        mChart8.setData(data8);
 
-            if (set8 == null) {
-                set8 = createSet8();
-                data8.addDataSet(set8);
-            }
+        mChart8.notifyDataSetChanged();
 
-            data8.addEntry(new Entry(set8.getEntryCount(), f), 0);
-            data8.notifyDataChanged();
+        // limit the number of visible entries
+        mChart8.setVisibleXRangeMaximum(20);
 
-            // let the chart know it's data has changed
-            mChart8.notifyDataSetChanged();
-
-            // limit the number of visible entries
-            mChart8.setVisibleXRangeMaximum(20);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-            // move to the latest entry
-            mChart8.moveViewToX(data8.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }
+        // move to the latest entry
+        mChart8.moveViewToX(data8.getEntryCount());
     }
 
-    private LineDataSet createSet() {
+    private LineDataSet createSet(ArrayList<Entry> le) {
 
-        LineDataSet set1 = new LineDataSet(null, "");
+        LineDataSet set1 = new LineDataSet(le, "legend");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setColor(ColorTemplate.getHoloBlue());
         set1.setCircleColor(Color.WHITE);
@@ -937,16 +861,16 @@ public class DeviceControlActivity extends Activity {
         set1.setCircleRadius(1f);
         set1.setFillAlpha(65);
         set1.setFillColor(ColorTemplate.getHoloBlue());
-        set1.setHighLightColor(Color.rgb(244, 117, 117));
+        //set1.setHighLightColor(Color.rgb(244, 117, 117));
         set1.setValueTextColor(Color.WHITE);
-        set1.setValueTextSize(0.1f);
-        set1.setDrawValues(false);
+        //set1.setValueTextSize(0.1f);
+        //set1.setDrawValues(false);
         return set1;
     }
 
-    private LineDataSet createSet2() {
+    private LineDataSet createSet2(ArrayList<Entry> le) {
 
-        LineDataSet set2 = new LineDataSet(null, "");
+        LineDataSet set2 = new LineDataSet(le, "legend");
         set2.setAxisDependency(YAxis.AxisDependency.LEFT);
         set2.setColor(Color.GREEN);
         set2.setCircleColor(Color.WHITE);
@@ -955,14 +879,14 @@ public class DeviceControlActivity extends Activity {
         set2.setFillAlpha(65);
         //set.setHighLightColor(Color.rgb(44, 117, 117));
         set2.setValueTextColor(Color.WHITE);
-        set2.setValueTextSize(0.1f);
-        set2.setDrawValues(false);
+        //set2.setValueTextSize(0.1f);
+        //set2.setDrawValues(false);
         return set2;
     }
 
-    private LineDataSet createSet3() {
+    private LineDataSet createSet3(ArrayList<Entry> le) {
 
-        LineDataSet set3 = new LineDataSet(null, "");
+        LineDataSet set3 = new LineDataSet(le, "legend");
         set3.setAxisDependency(YAxis.AxisDependency.LEFT);
         set3.setColor(Color.CYAN);
         set3.setCircleColor(Color.WHITE);
@@ -971,14 +895,14 @@ public class DeviceControlActivity extends Activity {
         set3.setFillAlpha(65);
         //set.setHighLightColor(Color.rgb(44, 117, 117));
         set3.setValueTextColor(Color.WHITE);
-        set3.setValueTextSize(0.1f);
-        set3.setDrawValues(false);
+        //set3.setValueTextSize(0.1f);
+        //set3.setDrawValues(false);
         return set3;
     }
 
-    private LineDataSet createSet4() {
+    private LineDataSet createSet4(ArrayList<Entry> le) {
 
-        LineDataSet set4 = new LineDataSet(null, "");
+        LineDataSet set4 = new LineDataSet(le, "legend");
         set4.setAxisDependency(YAxis.AxisDependency.LEFT);
         set4.setColor(Color.MAGENTA);
         set4.setCircleColor(Color.WHITE);
@@ -987,14 +911,14 @@ public class DeviceControlActivity extends Activity {
         set4.setFillAlpha(65);
         //set.setHighLightColor(Color.rgb(44, 117, 117));
         set4.setValueTextColor(Color.WHITE);
-        set4.setValueTextSize(0.1f);
-        set4.setDrawValues(false);
+        //set4.setValueTextSize(0.1f);
+        //set4.setDrawValues(false);
         return set4;
     }
 
-    private LineDataSet createSet5() {
+    private LineDataSet createSet5(ArrayList<Entry> le) {
 
-        LineDataSet set5 = new LineDataSet(null, "");
+        LineDataSet set5 = new LineDataSet(le, "legend");
         set5.setAxisDependency(YAxis.AxisDependency.LEFT);
         set5.setColor(Color.WHITE);
         set5.setCircleColor(Color.WHITE);
@@ -1003,14 +927,14 @@ public class DeviceControlActivity extends Activity {
         set5.setFillAlpha(65);
         //set.setHighLightColor(Color.rgb(44, 117, 117));
         set5.setValueTextColor(Color.WHITE);
-        set5.setValueTextSize(0.1f);
-        set5.setDrawValues(false);
+        //set5.setValueTextSize(0.1f);
+        //set5.setDrawValues(false);
         return set5;
     }
 
-    private LineDataSet createSet6() {
+    private LineDataSet createSet6(ArrayList<Entry> le) {
 
-        LineDataSet set6 = new LineDataSet(null, "");
+        LineDataSet set6 = new LineDataSet(le, "legend");
         set6.setAxisDependency(YAxis.AxisDependency.LEFT);
         set6.setColor(Color.BLACK);
         set6.setCircleColor(Color.WHITE);
@@ -1019,14 +943,14 @@ public class DeviceControlActivity extends Activity {
         set6.setFillAlpha(65);
         //set.setHighLightColor(Color.rgb(44, 117, 117));
         set6.setValueTextColor(Color.WHITE);
-        set6.setValueTextSize(0.1f);
-        set6.setDrawValues(false);
+        //set6.setValueTextSize(0.1f);
+        //set6.setDrawValues(false);
         return set6;
     }
 
-    private LineDataSet createSet7() {
+    private LineDataSet createSet7(ArrayList<Entry> le) {
 
-        LineDataSet set7 = new LineDataSet(null, "");
+        LineDataSet set7 = new LineDataSet(le, "legend");
         set7.setAxisDependency(YAxis.AxisDependency.LEFT);
         set7.setColor(Color.YELLOW);
         set7.setCircleColor(Color.WHITE);
@@ -1035,14 +959,14 @@ public class DeviceControlActivity extends Activity {
         set7.setFillAlpha(65);
         //set.setHighLightColor(Color.rgb(44, 117, 117));
         set7.setValueTextColor(Color.WHITE);
-        set7.setValueTextSize(0.1f);
-        set7.setDrawValues(false);
+        //set7.setValueTextSize(0.1f);
+        //set7.setDrawValues(false);
         return set7;
     }
 
-    private LineDataSet createSet8() {
+    private LineDataSet createSet8(ArrayList<Entry> le) {
 
-        LineDataSet set8 = new LineDataSet(null, "");
+        LineDataSet set8 = new LineDataSet(le, "legend");
         set8.setAxisDependency(YAxis.AxisDependency.LEFT);
         set8.setColor(Color.BLACK);
         set8.setCircleColor(Color.WHITE);
@@ -1051,8 +975,8 @@ public class DeviceControlActivity extends Activity {
         set8.setFillAlpha(65);
         //set.setHighLightColor(Color.rgb(44, 117, 117));
         set8.setValueTextColor(Color.WHITE);
-        set8.setValueTextSize(0.1f);
-        set8.setDrawValues(false);
+        //set8.setValueTextSize(0.1f);
+        //set8.setDrawValues(false);
         return set8;
     }
 

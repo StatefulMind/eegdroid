@@ -1,14 +1,14 @@
 <component name="libraryTable">
   <library name="com.android.support.test.espresso:espresso-intents-2.2.2">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/espresso-intents-2.2.2.aar/11a4fb7d44c9326137f74981d9e1d909/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/espresso-intents-2.2.2.aar/11a4fb7d44c9326137f74981d9e1d909/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/espresso-intents-2.2.2.aar/19247d95d07faf9cfb8115c8d28814bf/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/espresso-intents-2.2.2.aar/19247d95d07faf9cfb8115c8d28814bf/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$USER_HOME$/Android/Sdk/extras/android/m2repository/com/android/support/test/espresso/espresso-intents/2.2.2/espresso-intents-2.2.2-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Library/Android/sdk/extras/android/m2repository/com/android/support/test/espresso/espresso-intents/2.2.2/espresso-intents-2.2.2-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$USER_HOME$/Android/Sdk/extras/android/m2repository/com/android/support/test/espresso/espresso-intents/2.2.2/espresso-intents-2.2.2-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Library/Android/sdk/extras/android/m2repository/com/android/support/test/espresso/espresso-intents/2.2.2/espresso-intents-2.2.2-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
