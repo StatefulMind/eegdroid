@@ -12,12 +12,14 @@ import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.Toast;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
@@ -38,10 +40,24 @@ import com.github.mikephil.charting.highlight.Highlight;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Date;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.RoundingMode;
+
+import java.io.FileReader;
+import java.util.Iterator;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
@@ -77,6 +93,14 @@ public class DeviceControlActivity extends Activity {
     private LineChart mChart6;
     private LineChart mChart7;
     private LineChart mChart8;
+
+    private Button btn_record;
+    private boolean recording = false;
+    private INDArray main_data;
+    private String start_time;
+    private String end_time;
+    private long start_watch;
+    private String recording_time;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -122,6 +146,9 @@ public class DeviceControlActivity extends Activity {
                 displayGattServices(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                if(recording) {
+                    storeData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                }
             }
         }
     };
@@ -165,10 +192,126 @@ public class DeviceControlActivity extends Activity {
         mDataField.setText(R.string.no_data);
     }
 
+    private View.OnClickListener btnRecordOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            btnRecordButtonClicked();
+        }
+    };
+
+    private void btnRecordButtonClicked() {
+//        long start = null;
+        if(recording) {
+            recording = false;
+            end_time = new SimpleDateFormat("HH:mm:ss").format(new Date());
+            long stop_watch = System.currentTimeMillis();
+            recording_time = Long.toString(stop_watch - start_watch);
+            saveSession();
+            btn_record.setText("Record");
+        }
+        else {
+            main_data = Nd4j.zeros(1, 8);
+            start_time = new SimpleDateFormat("HH:mm:ss").format(new Date());
+            start_watch = System.currentTimeMillis();
+            recording = true;
+            btn_record.setText("Stop and Store Data");
+        }
+    }
+
+    private void storeData(String data) {
+        // Conversion formula: V_in = X*1.65V/(1000 * GAIN * 2048)
+        // Assuming GAIN = 64
+        final float numerator = 1650000;
+        final float denominator = 1000 * 64 * 2048;
+        final String[] parts = data.split(" ");
+        final List<Float> data_microV = new ArrayList<>();
+
+        for(int i = 0; i < 8; i++) {
+            data_microV.add((Float.parseFloat(parts[i]) * numerator) / denominator);
+        }
+        float[] f_microV = new float[data_microV.size()];
+        int i = 0;
+        for (Float f : data_microV) {
+            f_microV[i++] = (f != null ? f : Float.NaN); // Or whatever default you want
+        }
+        INDArray curr_data = Nd4j.create(f_microV);
+        main_data = Nd4j.vstack(main_data, curr_data);
+    }
+
+    private void saveSession() {
+        saveSession("Default");
+    }
+
+    private void saveSession(String tag) {
+        String top_header = "Session ID,Session Tag,Date,Shape (rows x columns)," +
+                "Duration (ms),Starting Time,Ending Time,Resolution (ms),Unit Measure";
+        String dp_header = "S1, S2, S3, S4, S5, S6, S7, S8,";
+        main_data = main_data.get(interval(1, main_data.rows()));  // Remove the first row (zeros)
+        UUID id = UUID.randomUUID();
+        String date = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+        Character delimiter = ',';
+        Character break_line = '\n';
+        Float current;
+        DecimalFormat df = new DecimalFormat("#.###");
+        df.setRoundingMode(RoundingMode.HALF_EVEN);
+        try {
+            File formatted = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS), date.replace('/', '-') + '_' + id + ".csv");
+            // if file doesn't exists, then create it
+            if (!formatted.exists()) {
+                formatted.createNewFile();
+            }
+            FileWriter fileWriter = new FileWriter(formatted);
+            Toast.makeText(this, "Saving EEG session into a file...", Toast.LENGTH_LONG).show();
+            String rows = String.valueOf(main_data.rows());  // Also INDArray.shape()[0]
+            String cols = String.valueOf(main_data.columns());  // Also INDArray.shape()[1]
+            fileWriter.append(top_header);
+            fileWriter.append(break_line);
+            fileWriter.append(id.toString());
+            fileWriter.append(delimiter);
+            fileWriter.append(tag);
+            fileWriter.append(delimiter);
+            fileWriter.append(date);
+            fileWriter.append(delimiter);
+            fileWriter.append(rows + " x " + cols);
+            fileWriter.append(delimiter);
+            fileWriter.append(recording_time);
+            fileWriter.append(delimiter);
+            fileWriter.append(start_time);
+            fileWriter.append(delimiter);
+            fileWriter.append(end_time);
+            fileWriter.append(delimiter);
+            String resolution = String.valueOf(Float.parseFloat(recording_time) / Float.parseFloat(rows));
+            fileWriter.append(resolution);
+            fileWriter.append(delimiter);
+            fileWriter.append("µV");
+            fileWriter.append(delimiter);
+            fileWriter.append(break_line);
+            fileWriter.append(dp_header);
+            fileWriter.append(break_line);
+            for (int i = 0; i < main_data.rows(); i++) {
+                for (int j = 0; j < main_data.columns(); j++) {
+                    current = main_data.getFloat(i, j);
+                    fileWriter.append(df.format(current));
+                    fileWriter.append(delimiter);
+                }
+                fileWriter.append(break_line);
+            }
+            fileWriter.flush();
+            fileWriter.close();
+            Toast.makeText(this, "Your EEG session was successfully stored", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e(TAG, String.format("Error storing the data into a CSV file: " + e));
+        }
+    }
+
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gatt_services_characteristics);
+
+        btn_record = (Button) findViewById(R.id.btn_record);
+        btn_record.setOnClickListener(btnRecordOnClickListener);
 
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -415,64 +558,64 @@ public class DeviceControlActivity extends Activity {
         YAxis leftAxis1 = mChart1.getAxisLeft();
         leftAxis1.setTypeface(mTfLight);
         leftAxis1.setTextColor(Color.WHITE);
-        leftAxis1.setAxisMaximum(25f);
-        leftAxis1.setAxisMinimum(-25f);
+        leftAxis1.setAxisMaximum(35f);
+        leftAxis1.setAxisMinimum(-35f);
         leftAxis1.setLabelCount(3, true);
         leftAxis1.setDrawGridLines(true);
 
         YAxis leftAxis2 = mChart2.getAxisLeft();
         leftAxis2.setTypeface(mTfLight);
         leftAxis2.setTextColor(Color.WHITE);
-        leftAxis2.setAxisMaximum(25f);
-        leftAxis2.setAxisMinimum(-25f);
+        leftAxis2.setAxisMaximum(35f);
+        leftAxis2.setAxisMinimum(-35f);
         leftAxis2.setLabelCount(3, true);
         leftAxis2.setDrawGridLines(true);
 
         YAxis leftAxis3 = mChart3.getAxisLeft();
         leftAxis3.setTypeface(mTfLight);
         leftAxis3.setTextColor(Color.WHITE);
-        leftAxis3.setAxisMaximum(25f);
-        leftAxis3.setAxisMinimum(-25f);
+        leftAxis3.setAxisMaximum(35f);
+        leftAxis3.setAxisMinimum(-35f);
         leftAxis3.setLabelCount(3, true);
         leftAxis3.setDrawGridLines(true);
 
         YAxis leftAxis4 = mChart4.getAxisLeft();
         leftAxis4.setTypeface(mTfLight);
         leftAxis4.setTextColor(Color.WHITE);
-        leftAxis4.setAxisMaximum(25f);
-        leftAxis4.setAxisMinimum(-25f);
+        leftAxis4.setAxisMaximum(35f);
+        leftAxis4.setAxisMinimum(-35f);
         leftAxis4.setLabelCount(3, true);
         leftAxis4.setDrawGridLines(true);
 
         YAxis leftAxis5 = mChart5.getAxisLeft();
         leftAxis5.setTypeface(mTfLight);
         leftAxis5.setTextColor(Color.WHITE);
-        leftAxis5.setAxisMaximum(25f);
-        leftAxis5.setAxisMinimum(-25f);
+        leftAxis5.setAxisMaximum(35f);
+        leftAxis5.setAxisMinimum(-35f);
         leftAxis5.setLabelCount(3, true);
         leftAxis5.setDrawGridLines(true);
 
         YAxis leftAxis6 = mChart6.getAxisLeft();
         leftAxis6.setTypeface(mTfLight);
         leftAxis6.setTextColor(Color.WHITE);
-        leftAxis6.setAxisMaximum(25f);
-        leftAxis6.setAxisMinimum(-25f);
+        leftAxis6.setAxisMaximum(35f);
+        leftAxis6.setAxisMinimum(-35f);
         leftAxis6.setLabelCount(3, true);
         leftAxis6.setDrawGridLines(true);
 
         YAxis leftAxis7 = mChart7.getAxisLeft();
         leftAxis7.setTypeface(mTfLight);
         leftAxis7.setTextColor(Color.WHITE);
-        leftAxis7.setAxisMaximum(25f);
-        leftAxis7.setAxisMinimum(-25f);
+        leftAxis7.setAxisMaximum(35f);
+        leftAxis7.setAxisMinimum(-35f);
         leftAxis7.setLabelCount(3, true);
         leftAxis7.setDrawGridLines(true);
 
         YAxis leftAxis8 = mChart8.getAxisLeft();
         leftAxis8.setTypeface(mTfLight);
         leftAxis8.setTextColor(Color.WHITE);
-        leftAxis8.setAxisMaximum(25f);
-        leftAxis8.setAxisMinimum(-25f);
+        leftAxis8.setAxisMaximum(35f);
+        leftAxis8.setAxisMinimum(-35f);
         leftAxis8.setLabelCount(3, true);
         //leftAxis8.setGranularityEnabled(true);
         leftAxis8.setDrawGridLines(true);
