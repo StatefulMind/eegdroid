@@ -23,6 +23,7 @@ import android.widget.Toast;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
+import android.text.InputType;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -53,11 +54,9 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.math.RoundingMode;
 
-import java.io.FileReader;
-import java.util.Iterator;
+import com.afollestad.materialdialogs.MaterialDialog;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
@@ -101,6 +100,7 @@ public class DeviceControlActivity extends Activity {
     private String end_time;
     private long start_watch;
     private String recording_time;
+    private String session_label;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -196,17 +196,42 @@ public class DeviceControlActivity extends Activity {
         @Override
         public void onClick(View v) {
             btnRecordButtonClicked();
+            if(recording) {
+                askForLabel();
+            }
         }
     };
 
+    private void askForLabel() {
+        new MaterialDialog.Builder(this)
+                .title("Please, enter the session label")
+                .inputType(InputType.TYPE_CLASS_TEXT)
+                .input("E.g. walking, eating, sleeping, etc.",
+                        "", new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(MaterialDialog dialog, CharSequence input) {
+                        session_label = input.toString();
+                    }
+                }).show();
+    }
+
     private void btnRecordButtonClicked() {
-//        long start = null;
         if(recording) {
             recording = false;
             end_time = new SimpleDateFormat("HH:mm:ss").format(new Date());
             long stop_watch = System.currentTimeMillis();
             recording_time = Long.toString(stop_watch - start_watch);
-            saveSession();
+            Toast.makeText(this, "Saving EEG session into a file...",
+                    Toast.LENGTH_LONG).show();
+            if(session_label == null) {
+                saveSession();
+            }
+            else {
+                saveSession(session_label);
+                session_label = null;
+            }
+            Toast.makeText(this, "Your EEG session was successfully stored",
+                    Toast.LENGTH_SHORT).show();
             btn_record.setText("Record");
         }
         else {
@@ -256,13 +281,13 @@ public class DeviceControlActivity extends Activity {
         df.setRoundingMode(RoundingMode.HALF_EVEN);
         try {
             File formatted = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS), date.replace('/', '-') + '_' + id + ".csv");
+                    Environment.DIRECTORY_DOWNLOADS),
+                    date.replace('/', '-') + '_' + id + ".csv");
             // if file doesn't exists, then create it
             if (!formatted.exists()) {
                 formatted.createNewFile();
             }
             FileWriter fileWriter = new FileWriter(formatted);
-            Toast.makeText(this, "Saving EEG session into a file...", Toast.LENGTH_LONG).show();
             String rows = String.valueOf(main_data.rows());  // Also INDArray.shape()[0]
             String cols = String.valueOf(main_data.columns());  // Also INDArray.shape()[1]
             fileWriter.append(top_header);
@@ -281,7 +306,8 @@ public class DeviceControlActivity extends Activity {
             fileWriter.append(delimiter);
             fileWriter.append(end_time);
             fileWriter.append(delimiter);
-            String resolution = String.valueOf(Float.parseFloat(recording_time) / Float.parseFloat(rows));
+            String resolution = String.valueOf(Float.parseFloat(recording_time) /
+                    Float.parseFloat(rows));
             fileWriter.append(resolution);
             fileWriter.append(delimiter);
             fileWriter.append("µV");
@@ -299,7 +325,6 @@ public class DeviceControlActivity extends Activity {
             }
             fileWriter.flush();
             fileWriter.close();
-            Toast.makeText(this, "Your EEG session was successfully stored", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e(TAG, String.format("Error storing the data into a CSV file: " + e));
         }
@@ -853,9 +878,9 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet(ArrayList<Entry> le) {
 
-        LineDataSet set1 = new LineDataSet(le, "legend");
+        LineDataSet set1 = new LineDataSet(le, "S1");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set1.setColor(ColorTemplate.getHoloBlue());
+        set1.setColor(Color.rgb(255,165,0));  // Orange color
         set1.setCircleColor(Color.WHITE);
         set1.setLineWidth(1f);
         set1.setCircleRadius(1f);
@@ -870,7 +895,7 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet2(ArrayList<Entry> le) {
 
-        LineDataSet set2 = new LineDataSet(le, "legend");
+        LineDataSet set2 = new LineDataSet(le, "S2");
         set2.setAxisDependency(YAxis.AxisDependency.LEFT);
         set2.setColor(Color.GREEN);
         set2.setCircleColor(Color.WHITE);
@@ -886,7 +911,7 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet3(ArrayList<Entry> le) {
 
-        LineDataSet set3 = new LineDataSet(le, "legend");
+        LineDataSet set3 = new LineDataSet(le, "S3");
         set3.setAxisDependency(YAxis.AxisDependency.LEFT);
         set3.setColor(Color.CYAN);
         set3.setCircleColor(Color.WHITE);
@@ -902,7 +927,7 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet4(ArrayList<Entry> le) {
 
-        LineDataSet set4 = new LineDataSet(le, "legend");
+        LineDataSet set4 = new LineDataSet(le, "S4");
         set4.setAxisDependency(YAxis.AxisDependency.LEFT);
         set4.setColor(Color.MAGENTA);
         set4.setCircleColor(Color.WHITE);
@@ -918,9 +943,9 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet5(ArrayList<Entry> le) {
 
-        LineDataSet set5 = new LineDataSet(le, "legend");
+        LineDataSet set5 = new LineDataSet(le, "S5");
         set5.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set5.setColor(Color.WHITE);
+        set5.setColor(Color.rgb(139,69,19));  // Brown color
         set5.setCircleColor(Color.WHITE);
         set5.setLineWidth(1f);
         set5.setCircleRadius(1f);
@@ -934,7 +959,7 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet6(ArrayList<Entry> le) {
 
-        LineDataSet set6 = new LineDataSet(le, "legend");
+        LineDataSet set6 = new LineDataSet(le, "S6");
         set6.setAxisDependency(YAxis.AxisDependency.LEFT);
         set6.setColor(Color.BLACK);
         set6.setCircleColor(Color.WHITE);
@@ -950,7 +975,7 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet7(ArrayList<Entry> le) {
 
-        LineDataSet set7 = new LineDataSet(le, "legend");
+        LineDataSet set7 = new LineDataSet(le, "S7");
         set7.setAxisDependency(YAxis.AxisDependency.LEFT);
         set7.setColor(Color.YELLOW);
         set7.setCircleColor(Color.WHITE);
@@ -966,9 +991,9 @@ public class DeviceControlActivity extends Activity {
 
     private LineDataSet createSet8(ArrayList<Entry> le) {
 
-        LineDataSet set8 = new LineDataSet(le, "legend");
+        LineDataSet set8 = new LineDataSet(le, "S8");
         set8.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set8.setColor(Color.BLACK);
+        set8.setColor(Color.RED);
         set8.setCircleColor(Color.WHITE);
         set8.setLineWidth(1f);
         set8.setCircleRadius(1f);
