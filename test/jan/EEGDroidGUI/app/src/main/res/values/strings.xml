@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">EEGDroidGUI</string>
+    <string name="tab_text_1">Intro</string>
+    <string name="tab_text_2">Connection</string>
+    <string name="tab_text_3">Graphs</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search_for_devices">Search for Traumschreiber devices</string>
+    <string name="device_state">State</string>
+</resources>
