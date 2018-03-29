@@ -1,5 +1,9 @@
 package de.uni_osnabrueck.traumschreiber.epilepsy.eegdroidgui;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -19,8 +23,21 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements ConnectToDeviceFragment.OnFragmentInteractionListener, ShowStatisticsFragment.OnFragmentInteractionListener {
+
+    private BluetoothAdapter mBluetoothAdapter;
+    private TraumschreiberHandler mTraumschreiberHandler;
+
+
+    private static final int REQUEST_ENABLE_BT = 1;
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
+
+    // Stops scanning after 10 seconds.
+    private static final long SCAN_PERIOD = 10000;
+
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -66,6 +83,28 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
             }
         });
 
+
+
+        if (!this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+            // TODO: If BLE is not supported, we should do graceful error handling
+            return;
+        }
+
+        // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
+        // BluetoothAdapter through BluetoothManager.
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) this.getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        // Checks if Bluetooth is supported on the device.
+        if (mBluetoothAdapter == null) {
+            Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+            // TODO: Graceful error handling again
+            return;
+        }
+
+        mTraumschreiberHandler = new TraumschreiberHandler(mBluetoothAdapter, this);
     }
 
 
@@ -140,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         public Fragment getItem(int position) {
 
             if (position == 1) {
-                return ConnectToDeviceFragment.newInstance("Test 1", "param 2");
+                return ConnectToDeviceFragment.newInstance();
             }
 
             if (position == 2) {
@@ -165,5 +204,15 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
     @Override
     public void onFragmentInteraction(Uri uri){
         //you can leave it empty
+    }
+
+
+
+
+    public void onClickBluetoothButton(View view) {
+        // Something will be done when this Button is clicked
+        Toast.makeText(this, "Test if something is done here", Toast.LENGTH_SHORT).show();
+        mTraumschreiberHandler.scanForLeDevices();
+        return;
     }
 }

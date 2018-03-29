@@ -1,39 +1,35 @@
 package de.uni_osnabrueck.traumschreiber.epilepsy.eegdroidgui;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link ConnectToDeviceFragment.OnFragmentInteractionListener} interface
+ * {@link PreviousData.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link ConnectToDeviceFragment#newInstance} factory method to
+ * Use the {@link PreviousData#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ConnectToDeviceFragment extends Fragment {
-
-    // For now, we do not need any fragment initialization parameters
+public class PreviousData extends Fragment {
+    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    //private static final String ARG_PARAM1 = "param1";
-    //private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
-    //private String mParam1;
-    //private String mParam2;
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
-    public ConnectToDeviceFragment() {
+    public PreviousData() {
         // Required empty public constructor
     }
 
@@ -41,14 +37,16 @@ public class ConnectToDeviceFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment ConnectToDeviceFragment.
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment PreviousData.
      */
-    //public static ConnectToDeviceFragment newInstance(String param1, String param2) {
-    public static ConnectToDeviceFragment newInstance() {
-        ConnectToDeviceFragment fragment = new ConnectToDeviceFragment();
+    // TODO: Rename and change types and number of parameters
+    public static PreviousData newInstance(String param1, String param2) {
+        PreviousData fragment = new PreviousData();
         Bundle args = new Bundle();
-        //args.putString(ARG_PARAM1, param1);
-        //args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -57,6 +55,8 @@ public class ConnectToDeviceFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -64,7 +64,7 @@ public class ConnectToDeviceFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_connect_to_device, container, false);
+        return inflater.inflate(R.layout.fragment_previous_data, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -105,5 +105,4 @@ public class ConnectToDeviceFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
 }

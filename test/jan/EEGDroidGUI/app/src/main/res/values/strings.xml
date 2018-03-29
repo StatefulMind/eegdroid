@@ -10,4 +10,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="search_for_devices">Search for Traumschreiber devices</string>
     <string name="device_state">State</string>
+    <string name="ble_not_supported">BLE is not supported by your device</string>
+    <string name="error_bluetooth_not_supported">Bluetooth is not supported</string>
 </resources>
