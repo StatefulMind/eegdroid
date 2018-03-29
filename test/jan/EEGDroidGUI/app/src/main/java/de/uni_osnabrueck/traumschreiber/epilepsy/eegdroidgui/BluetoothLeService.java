@@ -116,13 +116,6 @@ public class BluetoothLeService extends Service {
         }
     };
 
-    public int onStartCommand(Intent intent,
-                        int flags,
-                        int startId) {
-        Log.d(TAG, "onStartCommand: Executed onStartCommand");
-        return 2;
-    }
-
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);

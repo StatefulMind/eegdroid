@@ -2,6 +2,7 @@ package de.uni_osnabrueck.traumschreiber.epilepsy.eegdroidgui;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -39,6 +40,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements ConnectToDeviceFragment.OnFragmentInteractionListener, ShowStatisticsFragment.OnFragmentInteractionListener {
     private final static String TAG = MainActivity.class.getSimpleName();
@@ -91,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
             // TODO: Graceful error handling again
             return;
         }
+
+
 
         //mTraumschreiberHandler = new TraumschreiberHandler(mBluetoothAdapter, this);
     }
@@ -217,11 +224,11 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         @Override
         public Fragment getItem(int position) {
 
-            if (position == 1) {
+            if (position == 0) {
                 return ConnectToDeviceFragment.newInstance();
             }
 
-            if (position == 2) {
+            if (position == 1) {
                 return ShowStatisticsFragment.newInstance("Test 1", "param 2");
             }
 
@@ -247,15 +254,15 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
 
 
 
-    //TODO: This method is supposed to connect to a Traumschreiber device. Implement later
     public void connect(String deviceAddress) {
 
-        Log.d(TAG, "connect: Called connect for device with address " + deviceAddress);
+        Log.d(TAG, "connect: Attempting to connect to device with address " + deviceAddress);
 
         mDeviceAddress = deviceAddress;
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-        ComponentName comp = startService(gattServiceIntent);
+        //ComponentName comp = startService(gattServiceIntent);
+
 
         boolean ret = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
@@ -263,9 +270,46 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
 //        startService(new Intent(this, BLEConnectionService.class));
 //        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-        Log.d(TAG, "connect: Returned from bindService: " + comp + ret);
+        Log.d(TAG, "connect: Returned from bindService: " + ret);
+    }
+
+    public void displayAvailableServices() {
+        List<BluetoothGattService> gattServices = mBluetoothLeService.getSupportedGattServices();
+
+        for (BluetoothGattService gattService : gattServices) {
+            //String service_uuid = gattService.getUuid().toString();
+            UUID service_uuid = gattService.getUuid();
+            Log.d(TAG, "displayAvailableServices: "+service_uuid);
+
+            if (TraumschreiberService.BIOSIGNALS_SERVICE_UUID.equals(service_uuid)) {
+                Log.d(TAG, "displayAvailableServices: This one is the BIOSIGNALS_SERVICE");
+                List<BluetoothGattCharacteristic> gattCharacteristics =
+                        gattService.getCharacteristics();
+
+                //String char_uuid;
+                UUID char_uuid;
+                // Loops through available Characteristics.
+                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+
+//                    HashMap<String, String> currentCharaData = new HashMap<String, String>();
+                    //char_uuid = gattCharacteristic.getUuid().toString();
+                    char_uuid = gattCharacteristic.getUuid();
+//                    currentCharaData.put(
+//                            LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
+                    // If not really needed since the filtered service has only one characteristic
+                    if(char_uuid.equals(TraumschreiberService.BIOSIGNALS_UUID)){
+//                        currentCharaData.put(LIST_NAME, "EEG Data Values");
+//                        currentCharaData.put(LIST_UUID, uuid);
+//                        gattCharacteristicGroupData.add(currentCharaData);
+                        Log.d(TAG, "displayAvailableServices: Found Traumschreiber EEG SIGNAL Characteristic");
+                        mBluetoothLeService.setCharacteristicNotification(gattCharacteristic, true);
+                    }
+                }
+
+            }
 
 
+        }
     }
 
 
@@ -279,7 +323,6 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
     private BluetoothLeService mBluetoothLeService;
     private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
-    private boolean mConnected = false;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
 
 
@@ -315,18 +358,22 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
             final String action = intent.getAction();
             Log.d(TAG, "onReceive: Received something");
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
+                mDeviceConnected = true;
                 updateConnectionState(R.string.connected);
+                updateStatisticsFragment();
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
+                mDeviceConnected = false;
                 updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
+                updateStatisticsFragment();
                 clearUI();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                displayAvailableServices();
                 // Show all the supported services and characteristics on the user interface.
 //                displayGattServices(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                Log.d(TAG, "onReceive: Received data from a service");
 //                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 //                if(recording) {
 //                    storeData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
@@ -334,6 +381,13 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
             }
         }
     };
+
+    private void updateStatisticsFragment() {
+        Log.d(TAG, String.format("updateStatisticsFragment: Attempt to update the Statistics fragment with following data: " +
+                "ID: %1$s, status: %2$s", mDeviceAddress, mDeviceConnected));
+        Toast.makeText(getBaseContext(), String.format("updateStatisticsFragment: Attempt to update the Statistics fragment with following data: " +
+                "ID: %1$s, status: %2$s", mDeviceAddress, mDeviceConnected), Toast.LENGTH_SHORT).show();
+    }
 
     // If a given GATT characteristic is selected, check for supported features.  This sample
     // demonstrates 'Read' and 'Notify' features.  See
@@ -370,7 +424,7 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
             };
 
     private void clearUI() {
-        mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
+//        mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
 //        mDataField.setText(R.string.no_data);
     }
 
@@ -414,196 +468,5 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
-
-//
-//    public static String mDataString;
-//    public static BLEConnectionService mBLEConnectionService;
-//    public static BluetoothGattCharacteristic mNotifyCharacteristic;
-//
-//    // Code to manage Service lifecycle.
-//    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-//        @Override
-//        public void onServiceConnected(ComponentName componentName, IBinder service) {
-//            mBLEConnectionService = ((BLEConnectionService.LocalBinder) service).getService();
-//            if (!mBLEConnectionService.initialize()) {
-//                Toast.makeText(MainActivity.this, "Unable to initialize Bluetooth", Toast.LENGTH_SHORT).show();
-//                Log.d(TAG, "onServiceConnected: Unable to initialize Bluetooth");
-//                finish();
-//            }
-//            // connects to the selected device
-//            mBLEConnectionService.connect(mDeviceAddress);
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName componentName) {
-//            mBLEConnectionService = null;
-//        }
-//    };
-//
-
-
-//    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            final String action = intent.getAction();
-//            if (BLEConnectionService.ACTION_GATT_CONNECTED.equals(action)) {
-//                mDeviceConnected = true;
-//                updateConnectionState(R.string.connected);
-////                toggleProgressBar(0);
-////                disconnectButton.setVisibility(View.VISIBLE);
-//
-//                //Set up the plotting fragment to display receded data
-////                plottingSetup();
-//
-//            } else if (BLEConnectionService.ACTION_GATT_DISCONNECTED.equals(action)) {
-//                mDeviceConnected = false;
-//                updateConnectionState(R.string.disconnected);
-//                clearUI();
-////                disconnectButton.setVisibility(View.INVISIBLE);
-//
-//                unbindService(mServiceConnection);
-//                mBLEConnectionService = null;
-//
-//            } else if (BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-//                // Show all the supported services and characteristics on the user interface.
-//                // loop trough the device services !
-//                mDataGattCharacteristic = mBLEConnectionService.getSupportedGattServices().get(2).getCharacteristics().get(0);
-//
-//                mNotifyCharacteristic = mDataGattCharacteristic;
-//
-//                Log.i("fetched UUID ", mNotifyCharacteristic.getUuid().toString());
-//
-//                mBLEConnectionService.setCharacteristicNotification(
-//                        mDataGattCharacteristic, true);
-//
-//
-//            } else if (BLEConnectionService.ACTION_DATA_AVAILABLE.equals(action)) {
-//                displayData(intent.getStringExtra(BLEConnectionService.EXTRA_DATA));
-//            }
-//        }
-//    };
-//
-//    private static IntentFilter makeGattUpdateIntentFilter() {
-//        final IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction(BLEConnectionService.ACTION_GATT_CONNECTED);
-//        intentFilter.addAction(BLEConnectionService.ACTION_GATT_DISCONNECTED);
-//        intentFilter.addAction(BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED);
-//        intentFilter.addAction(BLEConnectionService.ACTION_DATA_AVAILABLE);
-//        return intentFilter;
-//    }
-//
-//    // Displays received data inside the Data Fragment
-//    private void displayData(String data) {
-//        if (data != null) {
-//            mDataString = data;
-//            // set text displaying full value
-////            if (mHeartRateText != null) {
-////                mHeartRateText.setText(data + " bpm");
-////            }
-////            // ads entry to the plot data set will update itself
-////            addEntry();
-//            Log.d(TAG, "displayData: Received data: "+data);
-//        }
-//    }
-//
-//
-//    private void updateConnectionState(final int resourceId) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-////                mConnectionState.setText(resourceId);
-//                // show to user what happened!
-//                Toast.makeText(MainActivity.this, resourceId, Toast.LENGTH_LONG).show();
-//                TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
-//                ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
-//                if (mDeviceConnected) {
-////                    button.setImageResource(R.drawable.ic_bt_success);
-////                    textView.setText("Connected!");
-////                    mConnectionLight.setImageResource(R.drawable.circle_green);
-//                    Toast.makeText(MainActivity.this, "We are connected!", Toast.LENGTH_SHORT).show();
-//                } else {
-////                    mLeDeviceListAdapter.clear();
-////                    button.setImageResource(R.drawable.ic_bt_icon);
-////                    textView.setText(R.string.discover_a_traumschreiber);
-////                    mConnectionLight.setImageResource(R.drawable.circle_red);
-//                    Toast.makeText(MainActivity.this, "We are disconnected!", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-//    }
-//
-//    // resets the UI on disconnect etc
-//    private void clearUI() {
-////
-////        if (mHeartRateText != null) {
-////            mHeartRateText.setText(R.string.heartrate);
-////        }
-////        if (mConnectionState != null) {
-////            mConnectionState.setText(R.string.status_disconnected);
-////            mConnectionLight.setImageResource(R.drawable.circle_red);
-////        }
-////        if (mUIDeviceName != null) {
-////            mUIDeviceName.setText(R.string.connect_to_a_device);
-////        }
-//
-//    }
-//
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        if (mBLEConnectionService != null) {
-//            mBLEConnectionService.killNotification();
-//        }
-//        mBLEConnectionService = null;
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        unregisterReceiver(mGattUpdateReceiver);
-//
-//
-////        if (mChart != null) {
-////            mChart.clear();
-////        }
-//    }
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-////
-////        if (mChart != null) {
-////            plottingSetup();
-////        }
-//
-//        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-//        if (mBLEConnectionService != null) {
-//            final boolean result = mBLEConnectionService.connect(mDeviceAddress);
-//        }
-//    }
-//
-//    @Override
-//    protected void onRestart() {
-//        super.onRestart();
-//
-////        // set up the plotting again
-////        plottingSetup();
-////
-////        if (!mDeviceConnected) {
-////            clearUI();
-////            TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
-////            ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
-////            mLeDeviceListAdapter.clear();
-////            button.setImageResource(R.drawable.ic_bt_icon);
-////            textView.setText(R.string.discover_a_traumschreiber);
-////            mChart.clear();
-////        }
-//    }
-//
-//    public void disconnectDevice(View view) {
-//
-//        mBLEConnectionService.disconnect();
-//    }
-//
 
 }

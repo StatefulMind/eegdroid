@@ -45,7 +45,7 @@ public class ConnectToDeviceFragment extends Fragment {
     //private String mParam1;
     //private String mParam2;
 
-    private static final boolean FILTER_FOR_TRAUMSCHREIBER = false;
+    private static final boolean FILTER_FOR_TRAUMSCHREIBER = true;
 
     private static final long SCAN_DURATION = 1000;
     public static LeDeviceListAdapter mLeDeviceListAdapter;
