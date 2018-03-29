@@ -1,5 +1,6 @@
 package de.uni_osnabrueck.traumschreiber.epilepsy.eegdroidgui;
 
+import android.bluetooth.BluetoothDevice;
 import android.util.Log;
 
 import java.util.UUID;
@@ -22,6 +23,10 @@ public class TraumschreiberService {
 
     public static boolean isTraumschreiberAddress(String bluetoothDeviceAddress) {
         return bluetoothDeviceAddress.startsWith(VENDOR_PREFIX);
+    }
+
+    public static boolean isTraumschreiber(BluetoothDevice bluetoothDevice) {
+        return true;
     }
 
     String mTraumschreiberDeviceAddress;

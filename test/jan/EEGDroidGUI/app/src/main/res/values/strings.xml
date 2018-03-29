@@ -12,4 +12,8 @@
     <string name="device_state">State</string>
     <string name="ble_not_supported">BLE is not supported by your device</string>
     <string name="error_bluetooth_not_supported">Bluetooth is not supported</string>
+    <string name="unknown_device">Unknown Device</string>
+    <string name="select_your_traumschreiber">Select your Traumschreiber</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
 </resources>

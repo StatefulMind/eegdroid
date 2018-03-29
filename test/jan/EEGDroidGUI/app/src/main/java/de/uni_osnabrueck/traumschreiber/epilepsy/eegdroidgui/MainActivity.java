@@ -1,10 +1,17 @@
 package de.uni_osnabrueck.traumschreiber.epilepsy.eegdroidgui;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.IBinder;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,20 +23,28 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements ConnectToDeviceFragment.OnFragmentInteractionListener, ShowStatisticsFragment.OnFragmentInteractionListener {
+    private final static String TAG = MainActivity.class.getSimpleName();
+
 
     private BluetoothAdapter mBluetoothAdapter;
-    private TraumschreiberHandler mTraumschreiberHandler;
 
+    //Will hold the attributes of a connected Traumschreiber, when done
+    public static boolean mDeviceConnected = false;
+    public static String mDeviceName;
+    public static String mDeviceAddress;
+    //public static BluetoothGattCharacteristic mNotifyCharacteristic;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
@@ -37,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
 
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
+
+    public BluetoothGattCharacteristic mDataGattCharacteristic;
 
 
     /**
@@ -104,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
             return;
         }
 
-        mTraumschreiberHandler = new TraumschreiberHandler(mBluetoothAdapter, this);
+        //mTraumschreiberHandler = new TraumschreiberHandler(mBluetoothAdapter, this);
     }
 
 
@@ -128,6 +145,16 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //TODO: Read the Toast
+    public void getPermission() {
+        Toast.makeText(this, "It is not yet implemented to ask for permission. Do so ASAP. Apps may crash otherwise. Use Somnium as orientation", Toast.LENGTH_SHORT).show();
+    }
+
+    //TODO: This methods checks the locationPermission
+    public boolean checkLocationPermission() {
+        return true;
     }
 
     /**
@@ -207,12 +234,207 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
     }
 
 
+    public static String mDataString;
+    public static BLEConnectionService mBLEConnectionService;
+    public static BluetoothGattCharacteristic mNotifyCharacteristic;
+
+    // Code to manage Service lifecycle.
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBLEConnectionService = ((BLEConnectionService.LocalBinder) service).getService();
+            if (!mBLEConnectionService.initialize()) {
+                Toast.makeText(MainActivity.this, "Unable to initialize Bluetooth", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onServiceConnected: Unable to initialize Bluetooth");
+                finish();
+            }
+            // connects to the selected device
+            mBLEConnectionService.connect(mDeviceAddress);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBLEConnectionService = null;
+        }
+    };
 
 
-    public void onClickBluetoothButton(View view) {
-        // Something will be done when this Button is clicked
-        Toast.makeText(this, "Test if something is done here", Toast.LENGTH_SHORT).show();
-        mTraumschreiberHandler.scanForLeDevices();
-        return;
+
+    //TODO: This method is supposed to connect to a Traumschreiber device. Implement later
+    public void connect(String deviceAddress) {
+
+        Log.d(TAG, "connect: Called connect for device with address " + deviceAddress);
+
+        Intent gattServiceIntent = new Intent(this, BLEConnectionService.class);
+        startService(new Intent(this, BLEConnectionService.class));
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        Log.d(TAG, "connect: Trying to connect to device " + deviceAddress);
+
     }
+
+
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BLEConnectionService.ACTION_GATT_CONNECTED.equals(action)) {
+                mDeviceConnected = true;
+                updateConnectionState(R.string.connected);
+//                toggleProgressBar(0);
+//                disconnectButton.setVisibility(View.VISIBLE);
+
+                //Set up the plotting fragment to display receded data
+//                plottingSetup();
+
+            } else if (BLEConnectionService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mDeviceConnected = false;
+                updateConnectionState(R.string.disconnected);
+                clearUI();
+//                disconnectButton.setVisibility(View.INVISIBLE);
+
+                unbindService(mServiceConnection);
+                mBLEConnectionService = null;
+
+            } else if (BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                // loop trough the device services !
+                mDataGattCharacteristic = mBLEConnectionService.getSupportedGattServices().get(2).getCharacteristics().get(0);
+
+                mNotifyCharacteristic = mDataGattCharacteristic;
+
+                Log.i("fetched UUID ", mNotifyCharacteristic.getUuid().toString());
+
+                mBLEConnectionService.setCharacteristicNotification(
+                        mDataGattCharacteristic, true);
+
+
+            } else if (BLEConnectionService.ACTION_DATA_AVAILABLE.equals(action)) {
+                displayData(intent.getStringExtra(BLEConnectionService.EXTRA_DATA));
+            }
+        }
+    };
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BLEConnectionService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BLEConnectionService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BLEConnectionService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
+
+    // Displays received data inside the Data Fragment
+    private void displayData(String data) {
+        if (data != null) {
+            mDataString = data;
+            // set text displaying full value
+//            if (mHeartRateText != null) {
+//                mHeartRateText.setText(data + " bpm");
+//            }
+//            // ads entry to the plot data set will update itself
+//            addEntry();
+            Log.d(TAG, "displayData: Received data: "+data);
+        }
+    }
+
+
+    private void updateConnectionState(final int resourceId) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+//                mConnectionState.setText(resourceId);
+                // show to user what happened!
+                Toast.makeText(MainActivity.this, resourceId, Toast.LENGTH_LONG).show();
+                TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
+                ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
+                if (mDeviceConnected) {
+//                    button.setImageResource(R.drawable.ic_bt_success);
+//                    textView.setText("Connected!");
+//                    mConnectionLight.setImageResource(R.drawable.circle_green);
+                    Toast.makeText(MainActivity.this, "We are connected!", Toast.LENGTH_SHORT).show();
+                } else {
+//                    mLeDeviceListAdapter.clear();
+//                    button.setImageResource(R.drawable.ic_bt_icon);
+//                    textView.setText(R.string.discover_a_traumschreiber);
+//                    mConnectionLight.setImageResource(R.drawable.circle_red);
+                    Toast.makeText(MainActivity.this, "We are disconnected!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    // resets the UI on disconnect etc
+    private void clearUI() {
+//
+//        if (mHeartRateText != null) {
+//            mHeartRateText.setText(R.string.heartrate);
+//        }
+//        if (mConnectionState != null) {
+//            mConnectionState.setText(R.string.status_disconnected);
+//            mConnectionLight.setImageResource(R.drawable.circle_red);
+//        }
+//        if (mUIDeviceName != null) {
+//            mUIDeviceName.setText(R.string.connect_to_a_device);
+//        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mBLEConnectionService != null) {
+            mBLEConnectionService.killNotification();
+        }
+        mBLEConnectionService = null;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
+
+
+//        if (mChart != null) {
+//            mChart.clear();
+//        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+//
+//        if (mChart != null) {
+//            plottingSetup();
+//        }
+
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBLEConnectionService != null) {
+            final boolean result = mBLEConnectionService.connect(mDeviceAddress);
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+
+//        // set up the plotting again
+//        plottingSetup();
+//
+//        if (!mDeviceConnected) {
+//            clearUI();
+//            TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
+//            ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
+//            mLeDeviceListAdapter.clear();
+//            button.setImageResource(R.drawable.ic_bt_icon);
+//            textView.setText(R.string.discover_a_traumschreiber);
+//            mChart.clear();
+//        }
+    }
+
+    public void disconnectDevice(View view) {
+
+        mBLEConnectionService.disconnect();
+    }
+
+
 }
