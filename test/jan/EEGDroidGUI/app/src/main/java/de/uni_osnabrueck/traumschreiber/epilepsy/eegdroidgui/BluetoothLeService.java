@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package de.uni_osnabrueck.traumschreiber.somnium;
+package de.uni_osnabrueck.traumschreiber.epilepsy.eegdroidgui;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -30,44 +28,51 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Service that connects to the BLE (Traumschreiber) Device and broadcasts
- * the received notifications back. Also handles connection state changes
+ * Service for managing connection and data communication with a GATT server hosted on a
+ * given Bluetooth LE device.
  */
-public class BLEConnectionService extends Service {
-    public final static UUID UUID_HEART_RATE_MEASUREMENT = UUID.fromString(DeviceGattAttributes.HEART_RATE_MEASUREMENT);
-    public final static String ACTION_GATT_CONNECTED = "traumschreiber.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED = "traumschreiber.le.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED = "traumschreiber.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE = "traumschreiber.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA = "traumschreiber.le.EXTRA_DATA";
-    private final static String TAG = BLEConnectionService.class.getSimpleName();
-    private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
-    public static boolean notified;
-    private final IBinder mServiceBinder = new LocalBinder();
+public class BluetoothLeService extends Service {
+    private final static String TAG = BluetoothLeService.class.getSimpleName();
+
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
+
+    private static final int STATE_DISCONNECTED = 0;
+    private static final int STATE_CONNECTING = 1;
+    private static final int STATE_CONNECTED = 2;
+
+    public final static String ACTION_GATT_CONNECTED =
+            "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED =
+            "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED =
+            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_DATA_AVAILABLE =
+            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_DATA =
+            "com.example.bluetooth.le.EXTRA_DATA";
+
+//    public final static UUID UUID_HEART_RATE_MEASUREMENT =
+//            UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
+
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             String intentAction;
+            Log.w(TAG, "ConnectionStateChange" + status);
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 intentAction = ACTION_GATT_CONNECTED;
                 mConnectionState = STATE_CONNECTED;
@@ -77,29 +82,18 @@ public class BLEConnectionService extends Service {
                 Log.i(TAG, "Attempting to start service discovery:" +
                         mBluetoothGatt.discoverServices());
 
-                // show notification in Toolbar
-                showNotification();
-
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server.");
                 broadcastUpdate(intentAction);
-
-                // disable notification in Toolbar
-                killNotification();
-
-                //close the connection on disconnect
-                close();
-
-                MainActivity.mDeviceConnected = false;
-
             }
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                Log.w(TAG, "onServicesDiscovered received: " + status);
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
@@ -122,37 +116,11 @@ public class BLEConnectionService extends Service {
         }
     };
 
-    private void showNotification() {
-
-        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.recordrec)
-                        .setLargeIcon(largeIcon)
-                        .setContentTitle("Somnium")
-                        .setContentText("Receiving data!")
-                        .setUsesChronometer(true)
-                        .setProgress(0, 0, true)
-                        .setCategory("CATEGORY_STATUS");
-
-
-        Intent returnIntent = new Intent(getApplicationContext(), MainActivity.class);
-        returnIntent.setAction(Intent.ACTION_MAIN);
-        returnIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        returnIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0,
-                returnIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        mBuilder.setContentIntent(contentIntent);
-
-
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // start
-        mNotificationManager.notify(8924, mBuilder.build());
-        notified = true;
+    public int onStartCommand(Intent intent,
+                        int flags,
+                        int startId) {
+        Log.d(TAG, "onStartCommand: Executed onStartCommand");
+        return 2;
     }
 
     private void broadcastUpdate(final String action) {
@@ -160,32 +128,53 @@ public class BLEConnectionService extends Service {
         sendBroadcast(intent);
     }
 
+    private int iterState = 0;
+    private int iterIntersteps = 100;
+    private int[] dataOld_int;
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
+        Log.w(TAG, "Sending Broadcast Update " + action);
         final Intent intent = new Intent(action);
 
         // This is special handling for the Heart Rate Measurement profile.  Data parsing is
         // carried out as per profile specifications:
         // http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
-        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
-            int flag = characteristic.getProperties();
-            int format = -1;
-            if ((flag & 0x01) != 0) {
-                format = BluetoothGattCharacteristic.FORMAT_UINT16;
-                Log.d(TAG, "Heart rate format UINT16.");
-            } else {
-                format = BluetoothGattCharacteristic.FORMAT_UINT8;
-                Log.d(TAG, "Heart rate format UINT8.");
+        if (TraumschreiberService.BIOSIGNALS_UUID.equals(characteristic.getUuid())) {
+            final byte[] data = characteristic.getValue();
+
+            if (data != null && data.length > 0) {
+                //We have to decompress the EEG-Data here. This is done by TraumschreiberService.decompress();
+                int[] data_int = TraumschreiberService.decompress(data);
+
+                final StringBuilder stringBuilder = new StringBuilder(data.length);
+
+
+                //log incoming data:
+                StringBuilder stringBuilder1 = new StringBuilder(data_int.length);
+                for (int datapoint : data_int) {
+                    stringBuilder1.append(String.format("%+06d ", datapoint));
+                }
+                Log.d(TAG, String.format("Received EEG Signal " + stringBuilder1.toString()));
+                stringBuilder.append(stringBuilder1.toString());
+
+                //                stringBuilder.append("\n");
+
+//                for(byte byteChar : data) {
+//                    //stringBuilder.append(String.format("%02X ", byteChar));
+//                    stringBuilder.append(byteChar + " ");
+//                }
+
+
+                intent.putExtra(EXTRA_DATA, stringBuilder.toString());
+                Log.d(TAG, String.format("Received EEG Signal " + stringBuilder.toString()));
             }
-            final int heartRate = characteristic.getIntValue(format, 1);
-            Log.d(TAG, String.format("Received heart rate: %d", heartRate));
-            intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         } else {
+        Log.d(TAG, "broadcastUpdate: Broadcast Update for non-Traumschreiber devices");
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
-                for (byte byteChar : data)
+                for(byte byteChar : data)
                     stringBuilder.append(String.format("%02X ", byteChar));
                 intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
             }
@@ -193,9 +182,15 @@ public class BLEConnectionService extends Service {
         sendBroadcast(intent);
     }
 
+    public class LocalBinder extends Binder {
+        BluetoothLeService getService() {
+            return BluetoothLeService.this;
+        }
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
-        return mServiceBinder;
+        return mBinder;
     }
 
     @Override
@@ -206,6 +201,8 @@ public class BLEConnectionService extends Service {
         close();
         return super.onUnbind(intent);
     }
+
+    private final IBinder mBinder = new LocalBinder();
 
     /**
      * Initializes a reference to the local Bluetooth adapter.
@@ -236,10 +233,11 @@ public class BLEConnectionService extends Service {
      * Connects to the GATT server hosted on the Bluetooth LE device.
      *
      * @param address The device address of the destination device.
+     *
      * @return Return true if the connection is initiated successfully. The connection result
-     * is reported asynchronously through the
-     * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
-     * callback.
+     *         is reported asynchronously through the
+     *         {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
+     *         callback.
      */
     public boolean connect(final String address) {
         if (mBluetoothAdapter == null || address == null) {
@@ -293,11 +291,8 @@ public class BLEConnectionService extends Service {
      */
     public void close() {
         if (mBluetoothGatt == null) {
-            killNotification();
             return;
         }
-        // disable notification in Toolbar
-        killNotification();
         mBluetoothGatt.close();
         mBluetoothGatt = null;
     }
@@ -321,7 +316,7 @@ public class BLEConnectionService extends Service {
      * Enables or disables notification on a give characteristic.
      *
      * @param characteristic Characteristic to act on.
-     * @param enabled        If true, enable notification.  False otherwise.
+     * @param enabled If true, enable notification.  False otherwise.
      */
     public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                               boolean enabled) {
@@ -331,13 +326,13 @@ public class BLEConnectionService extends Service {
         }
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
 
-        // If specific Device (HEART_RATE) is found write descriptors
-        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString(DeviceGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mBluetoothGatt.writeDescriptor(descriptor);
-        }
+        // This is specific to Heart Rate Measurement.
+//        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
+//            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+//                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+//            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+//            mBluetoothGatt.writeDescriptor(descriptor);
+//        }
     }
 
     /**
@@ -351,38 +346,4 @@ public class BLEConnectionService extends Service {
 
         return mBluetoothGatt.getServices();
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        close();
-    }
-
-    /**
-     * Disables the Notification shown outside of the app
-     */
-    public void killNotification() {
-
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notified) {
-            nm.cancel(8924);
-            notified = false;
-        }
-    }
-
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        killNotification();
-        this.stopSelf();
-    }
-
-
-
-    public class LocalBinder extends Binder {
-        BLEConnectionService getService() {
-            return BLEConnectionService.this;
-        }
-    }
-
 }

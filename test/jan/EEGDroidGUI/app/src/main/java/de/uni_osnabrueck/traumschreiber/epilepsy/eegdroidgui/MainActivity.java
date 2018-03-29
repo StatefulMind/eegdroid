@@ -12,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -30,21 +31,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ImageButton;
+import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements ConnectToDeviceFragment.OnFragmentInteractionListener, ShowStatisticsFragment.OnFragmentInteractionListener {
     private final static String TAG = MainActivity.class.getSimpleName();
 
 
     private BluetoothAdapter mBluetoothAdapter;
-
-    //Will hold the attributes of a connected Traumschreiber, when done
-    public static boolean mDeviceConnected = false;
-    public static String mDeviceName;
-    public static String mDeviceAddress;
-    //public static BluetoothGattCharacteristic mNotifyCharacteristic;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
@@ -98,9 +98,21 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
+
         });
+        final Intent intent = getIntent();
 
-
+        // Sets up UI references.
+//        ((TextView) findViewById(R.id.device_address)).setText(mDeviceAddress);
+//        mGattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
+//        mGattServicesList.setOnChildClickListener(servicesListClickListner);
+//        mConnectionState = (TextView) findViewById(R.id.connection_state);
+//        mDataField = (TextView) findViewById(R.id.data_value);
+//        TextView tv = (TextView) findViewById(R.id.data_value);
+//        String eeg_data = new String((String) mSectionsPagerAdapter.getItem(2).);
+////        Log.d(TAG, String.format("Values: " + eeg_data));
+//        getActionBar().setTitle(mDeviceName);
+//        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (!this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
@@ -234,207 +246,364 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
     }
 
 
-    public static String mDataString;
-    public static BLEConnectionService mBLEConnectionService;
-    public static BluetoothGattCharacteristic mNotifyCharacteristic;
-
-    // Code to manage Service lifecycle.
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mBLEConnectionService = ((BLEConnectionService.LocalBinder) service).getService();
-            if (!mBLEConnectionService.initialize()) {
-                Toast.makeText(MainActivity.this, "Unable to initialize Bluetooth", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "onServiceConnected: Unable to initialize Bluetooth");
-                finish();
-            }
-            // connects to the selected device
-            mBLEConnectionService.connect(mDeviceAddress);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mBLEConnectionService = null;
-        }
-    };
-
-
 
     //TODO: This method is supposed to connect to a Traumschreiber device. Implement later
     public void connect(String deviceAddress) {
 
         Log.d(TAG, "connect: Called connect for device with address " + deviceAddress);
 
-        Intent gattServiceIntent = new Intent(this, BLEConnectionService.class);
-        startService(new Intent(this, BLEConnectionService.class));
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-        Log.d(TAG, "connect: Trying to connect to device " + deviceAddress);
+        mDeviceAddress = deviceAddress;
+
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        ComponentName comp = startService(gattServiceIntent);
+
+        boolean ret = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+//        Intent gattServiceIntent = new Intent(this, BLEConnectionService.class);
+//        startService(new Intent(this, BLEConnectionService.class));
+//        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+        Log.d(TAG, "connect: Returned from bindService: " + comp + ret);
+
 
     }
 
 
+    //Will hold the attributes of a connected Traumschreiber, when done
+    public static boolean mDeviceConnected = false;
+    public static String mDeviceName;
+    public static String mDeviceAddress;
+
+
+    private ExpandableListView mGattServicesList;
+    private BluetoothLeService mBluetoothLeService;
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
+            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private boolean mConnected = false;
+    private BluetoothGattCharacteristic mNotifyCharacteristic;
+
+
+    // Code to manage Service lifecycle.
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e(TAG, "Unable to initialize Bluetooth");
+                finish();
+            }
+            // Automatically connects to the device upon successful start-up initialization.
+            mBluetoothLeService.connect(mDeviceAddress);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
+
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (BLEConnectionService.ACTION_GATT_CONNECTED.equals(action)) {
-                mDeviceConnected = true;
+            Log.d(TAG, "onReceive: Received something");
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                mConnected = true;
                 updateConnectionState(R.string.connected);
-//                toggleProgressBar(0);
-//                disconnectButton.setVisibility(View.VISIBLE);
-
-                //Set up the plotting fragment to display receded data
-//                plottingSetup();
-
-            } else if (BLEConnectionService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mDeviceConnected = false;
+                invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mConnected = false;
                 updateConnectionState(R.string.disconnected);
+                invalidateOptionsMenu();
                 clearUI();
-//                disconnectButton.setVisibility(View.INVISIBLE);
-
-                unbindService(mServiceConnection);
-                mBLEConnectionService = null;
-
-            } else if (BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
-                // loop trough the device services !
-                mDataGattCharacteristic = mBLEConnectionService.getSupportedGattServices().get(2).getCharacteristics().get(0);
-
-                mNotifyCharacteristic = mDataGattCharacteristic;
-
-                Log.i("fetched UUID ", mNotifyCharacteristic.getUuid().toString());
-
-                mBLEConnectionService.setCharacteristicNotification(
-                        mDataGattCharacteristic, true);
-
-
-            } else if (BLEConnectionService.ACTION_DATA_AVAILABLE.equals(action)) {
-                displayData(intent.getStringExtra(BLEConnectionService.EXTRA_DATA));
+//                displayGattServices(mBluetoothLeService.getSupportedGattServices());
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+//                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                if(recording) {
+//                    storeData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                }
             }
         }
     };
 
-    private static IntentFilter makeGattUpdateIntentFilter() {
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BLEConnectionService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(BLEConnectionService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(BLEConnectionService.ACTION_DATA_AVAILABLE);
-        return intentFilter;
-    }
-
-    // Displays received data inside the Data Fragment
-    private void displayData(String data) {
-        if (data != null) {
-            mDataString = data;
-            // set text displaying full value
-//            if (mHeartRateText != null) {
-//                mHeartRateText.setText(data + " bpm");
-//            }
-//            // ads entry to the plot data set will update itself
-//            addEntry();
-            Log.d(TAG, "displayData: Received data: "+data);
-        }
-    }
-
-
-    private void updateConnectionState(final int resourceId) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-//                mConnectionState.setText(resourceId);
-                // show to user what happened!
-                Toast.makeText(MainActivity.this, resourceId, Toast.LENGTH_LONG).show();
-                TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
-                ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
-                if (mDeviceConnected) {
-//                    button.setImageResource(R.drawable.ic_bt_success);
-//                    textView.setText("Connected!");
-//                    mConnectionLight.setImageResource(R.drawable.circle_green);
-                    Toast.makeText(MainActivity.this, "We are connected!", Toast.LENGTH_SHORT).show();
-                } else {
-//                    mLeDeviceListAdapter.clear();
-//                    button.setImageResource(R.drawable.ic_bt_icon);
-//                    textView.setText(R.string.discover_a_traumschreiber);
-//                    mConnectionLight.setImageResource(R.drawable.circle_red);
-                    Toast.makeText(MainActivity.this, "We are disconnected!", Toast.LENGTH_SHORT).show();
+    // If a given GATT characteristic is selected, check for supported features.  This sample
+    // demonstrates 'Read' and 'Notify' features.  See
+    // http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for the complete
+    // list of supported characteristic features.
+    private final ExpandableListView.OnChildClickListener servicesListClickListner =
+            new ExpandableListView.OnChildClickListener() {
+                @Override
+                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition,
+                                            int childPosition, long id) {
+                    if (mGattCharacteristics != null) {
+                        final BluetoothGattCharacteristic characteristic =
+                                mGattCharacteristics.get(groupPosition).get(childPosition);
+                        final int charaProp = characteristic.getProperties();
+                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                            // If there is an active notification on a characteristic, clear
+                            // it first so it doesn't update the data field on the user interface.
+                            if (mNotifyCharacteristic != null) {
+                                mBluetoothLeService.setCharacteristicNotification(
+                                        mNotifyCharacteristic, false);
+                                mNotifyCharacteristic = null;
+                            }
+                            mBluetoothLeService.readCharacteristic(characteristic);
+                        }
+                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                            mNotifyCharacteristic = characteristic;
+                            mBluetoothLeService.setCharacteristicNotification(
+                                    characteristic, true);
+                        }
+                        return true;
+                    }
+                    return false;
                 }
-            }
-        });
-    }
+            };
 
-    // resets the UI on disconnect etc
     private void clearUI() {
-//
-//        if (mHeartRateText != null) {
-//            mHeartRateText.setText(R.string.heartrate);
-//        }
-//        if (mConnectionState != null) {
-//            mConnectionState.setText(R.string.status_disconnected);
-//            mConnectionLight.setImageResource(R.drawable.circle_red);
-//        }
-//        if (mUIDeviceName != null) {
-//            mUIDeviceName.setText(R.string.connect_to_a_device);
-//        }
-
+        mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
+//        mDataField.setText(R.string.no_data);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mBLEConnectionService != null) {
-            mBLEConnectionService.killNotification();
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            Log.d(TAG, "Connect request result=" + result);
         }
-        mBLEConnectionService = null;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mGattUpdateReceiver);
-
-
-//        if (mChart != null) {
-//            mChart.clear();
-//        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
+    }
+
+    private void updateConnectionState(final int resourceId) {
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                mConnectionState.setText(resourceId);
+//            }
+//        });
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
+
 //
-//        if (mChart != null) {
-//            plottingSetup();
-//        }
-
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBLEConnectionService != null) {
-            final boolean result = mBLEConnectionService.connect(mDeviceAddress);
-        }
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-
-//        // set up the plotting again
-//        plottingSetup();
+//    public static String mDataString;
+//    public static BLEConnectionService mBLEConnectionService;
+//    public static BluetoothGattCharacteristic mNotifyCharacteristic;
 //
-//        if (!mDeviceConnected) {
-//            clearUI();
-//            TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
-//            ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
-//            mLeDeviceListAdapter.clear();
-//            button.setImageResource(R.drawable.ic_bt_icon);
-//            textView.setText(R.string.discover_a_traumschreiber);
-//            mChart.clear();
+//    // Code to manage Service lifecycle.
+//    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+//        @Override
+//        public void onServiceConnected(ComponentName componentName, IBinder service) {
+//            mBLEConnectionService = ((BLEConnectionService.LocalBinder) service).getService();
+//            if (!mBLEConnectionService.initialize()) {
+//                Toast.makeText(MainActivity.this, "Unable to initialize Bluetooth", Toast.LENGTH_SHORT).show();
+//                Log.d(TAG, "onServiceConnected: Unable to initialize Bluetooth");
+//                finish();
+//            }
+//            // connects to the selected device
+//            mBLEConnectionService.connect(mDeviceAddress);
 //        }
-    }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName componentName) {
+//            mBLEConnectionService = null;
+//        }
+//    };
+//
 
-    public void disconnectDevice(View view) {
 
-        mBLEConnectionService.disconnect();
-    }
-
+//    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            final String action = intent.getAction();
+//            if (BLEConnectionService.ACTION_GATT_CONNECTED.equals(action)) {
+//                mDeviceConnected = true;
+//                updateConnectionState(R.string.connected);
+////                toggleProgressBar(0);
+////                disconnectButton.setVisibility(View.VISIBLE);
+//
+//                //Set up the plotting fragment to display receded data
+////                plottingSetup();
+//
+//            } else if (BLEConnectionService.ACTION_GATT_DISCONNECTED.equals(action)) {
+//                mDeviceConnected = false;
+//                updateConnectionState(R.string.disconnected);
+//                clearUI();
+////                disconnectButton.setVisibility(View.INVISIBLE);
+//
+//                unbindService(mServiceConnection);
+//                mBLEConnectionService = null;
+//
+//            } else if (BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+//                // Show all the supported services and characteristics on the user interface.
+//                // loop trough the device services !
+//                mDataGattCharacteristic = mBLEConnectionService.getSupportedGattServices().get(2).getCharacteristics().get(0);
+//
+//                mNotifyCharacteristic = mDataGattCharacteristic;
+//
+//                Log.i("fetched UUID ", mNotifyCharacteristic.getUuid().toString());
+//
+//                mBLEConnectionService.setCharacteristicNotification(
+//                        mDataGattCharacteristic, true);
+//
+//
+//            } else if (BLEConnectionService.ACTION_DATA_AVAILABLE.equals(action)) {
+//                displayData(intent.getStringExtra(BLEConnectionService.EXTRA_DATA));
+//            }
+//        }
+//    };
+//
+//    private static IntentFilter makeGattUpdateIntentFilter() {
+//        final IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(BLEConnectionService.ACTION_GATT_CONNECTED);
+//        intentFilter.addAction(BLEConnectionService.ACTION_GATT_DISCONNECTED);
+//        intentFilter.addAction(BLEConnectionService.ACTION_GATT_SERVICES_DISCOVERED);
+//        intentFilter.addAction(BLEConnectionService.ACTION_DATA_AVAILABLE);
+//        return intentFilter;
+//    }
+//
+//    // Displays received data inside the Data Fragment
+//    private void displayData(String data) {
+//        if (data != null) {
+//            mDataString = data;
+//            // set text displaying full value
+////            if (mHeartRateText != null) {
+////                mHeartRateText.setText(data + " bpm");
+////            }
+////            // ads entry to the plot data set will update itself
+////            addEntry();
+//            Log.d(TAG, "displayData: Received data: "+data);
+//        }
+//    }
+//
+//
+//    private void updateConnectionState(final int resourceId) {
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+////                mConnectionState.setText(resourceId);
+//                // show to user what happened!
+//                Toast.makeText(MainActivity.this, resourceId, Toast.LENGTH_LONG).show();
+//                TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
+//                ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
+//                if (mDeviceConnected) {
+////                    button.setImageResource(R.drawable.ic_bt_success);
+////                    textView.setText("Connected!");
+////                    mConnectionLight.setImageResource(R.drawable.circle_green);
+//                    Toast.makeText(MainActivity.this, "We are connected!", Toast.LENGTH_SHORT).show();
+//                } else {
+////                    mLeDeviceListAdapter.clear();
+////                    button.setImageResource(R.drawable.ic_bt_icon);
+////                    textView.setText(R.string.discover_a_traumschreiber);
+////                    mConnectionLight.setImageResource(R.drawable.circle_red);
+//                    Toast.makeText(MainActivity.this, "We are disconnected!", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
+//    }
+//
+//    // resets the UI on disconnect etc
+//    private void clearUI() {
+////
+////        if (mHeartRateText != null) {
+////            mHeartRateText.setText(R.string.heartrate);
+////        }
+////        if (mConnectionState != null) {
+////            mConnectionState.setText(R.string.status_disconnected);
+////            mConnectionLight.setImageResource(R.drawable.circle_red);
+////        }
+////        if (mUIDeviceName != null) {
+////            mUIDeviceName.setText(R.string.connect_to_a_device);
+////        }
+//
+//    }
+//
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        if (mBLEConnectionService != null) {
+//            mBLEConnectionService.killNotification();
+//        }
+//        mBLEConnectionService = null;
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        unregisterReceiver(mGattUpdateReceiver);
+//
+//
+////        if (mChart != null) {
+////            mChart.clear();
+////        }
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+////
+////        if (mChart != null) {
+////            plottingSetup();
+////        }
+//
+//        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+//        if (mBLEConnectionService != null) {
+//            final boolean result = mBLEConnectionService.connect(mDeviceAddress);
+//        }
+//    }
+//
+//    @Override
+//    protected void onRestart() {
+//        super.onRestart();
+//
+////        // set up the plotting again
+////        plottingSetup();
+////
+////        if (!mDeviceConnected) {
+////            clearUI();
+////            TextView textView = (TextView) findViewById(R.id.bluetoothButtonTextView);
+////            ImageButton button = (ImageButton) findViewById(R.id.bluetoothButton);
+////            mLeDeviceListAdapter.clear();
+////            button.setImageResource(R.drawable.ic_bt_icon);
+////            textView.setText(R.string.discover_a_traumschreiber);
+////            mChart.clear();
+////        }
+//    }
+//
+//    public void disconnectDevice(View view) {
+//
+//        mBLEConnectionService.disconnect();
+//    }
+//
 
 }
