@@ -22,7 +22,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -33,7 +32,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
@@ -132,34 +130,23 @@ public class BluetoothLeService extends Service {
         // This is special handling for the Heart Rate Measurement profile.  Data parsing is
         // carried out as per profile specifications:
         // http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
-        if (TraumschreiberService.BIOSIGNALS_UUID.equals(characteristic.getUuid())) {
+        if (TraumschreiberToolbox.BIOSIGNALS_UUID.equals(characteristic.getUuid())) {
             final byte[] data = characteristic.getValue();
 
             if (data != null && data.length > 0) {
-                //We have to decompress the EEG-Data here. This is done by TraumschreiberService.decompress();
-                int[] data_int = TraumschreiberService.decompress(data);
+                //We have to decompress the EEG-Data here. This is done by TraumschreiberToolbox.decompress();
+                int[] data_int = TraumschreiberToolbox.decompress(data);
 
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
 
 
                 //log incoming data:
-                StringBuilder stringBuilder1 = new StringBuilder(data_int.length);
                 for (int datapoint : data_int) {
-                    stringBuilder1.append(String.format("%+06d ", datapoint));
+                    stringBuilder.append(String.format("%+06d ", datapoint));
                 }
-                Log.d(TAG, String.format("Received EEG Signal " + stringBuilder1.toString()));
-                stringBuilder.append(stringBuilder1.toString());
-
-                //                stringBuilder.append("\n");
-
-//                for(byte byteChar : data) {
-//                    //stringBuilder.append(String.format("%02X ", byteChar));
-//                    stringBuilder.append(byteChar + " ");
-//                }
-
+                Log.d(TAG, String.format("Received EEG Signal " + stringBuilder.toString()));
 
                 intent.putExtra(EXTRA_DATA, stringBuilder.toString());
-                Log.d(TAG, String.format("Received EEG Signal " + stringBuilder.toString()));
             }
         } else {
         Log.d(TAG, "broadcastUpdate: Broadcast Update for non-Traumschreiber devices");

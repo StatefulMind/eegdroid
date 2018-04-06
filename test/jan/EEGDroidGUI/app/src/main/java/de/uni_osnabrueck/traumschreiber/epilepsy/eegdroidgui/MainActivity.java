@@ -11,9 +11,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -32,15 +34,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.ImageButton;
-import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,11 +52,19 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
 
-    // Stops scanning after 10 seconds.
+    // Stops scanning after x/1000 seconds.
     private static final long SCAN_PERIOD = 10000;
+
+    private static final int COLOR_CONNECTED = Color.parseColor("#00FF00");
+    private static final int COLOR_DISCONNECTED = Color.parseColor("#000000");
+    private static final int COLOR_RECORDING = Color.parseColor("#FF8000");
 
     public BluetoothGattCharacteristic mDataGattCharacteristic;
 
+    //Setting up all TextViews and Buttons we might need
+    private TextView mDeviceIDTextView;
+    private TextView mChannelsNumTextView;
+    private TextView mConnectionStatusTextView;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -96,15 +102,18 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Disconnecting from Traumschreiber Device", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//                if (mBluetoothLeService != null) {
+//                    mBluetoothLeService.disconnect();
+//                }
+//            }
+//
+//        });
         final Intent intent = getIntent();
 
         // Sets up UI references.
@@ -138,9 +147,6 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
             return;
         }
 
-
-
-        //mTraumschreiberHandler = new TraumschreiberHandler(mBluetoothAdapter, this);
     }
 
 
@@ -171,9 +177,18 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         Toast.makeText(this, "It is not yet implemented to ask for permission. Do so ASAP. Apps may crash otherwise. Use Somnium as orientation", Toast.LENGTH_SHORT).show();
     }
 
-    //TODO: This methods checks the locationPermission
+    /**
+     * Checks if Location Services are enabled on the users device if on Android 6.0 or higher
+     * On Android < 6.0 return true
+     *
+     * @return boolean
+     */
     public boolean checkLocationPermission() {
-        return true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            LocationManager locationManager;
+            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } else return true;
     }
 
     /**
@@ -256,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
 
     public void connect(String deviceAddress) {
 
-        Log.d(TAG, "connect: Attempting to connect to device with address " + deviceAddress);
+        Log.d(TAG, "connect: Attempting to connect to " + deviceAddress);
 
         mDeviceAddress = deviceAddress;
 
@@ -273,35 +288,33 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         Log.d(TAG, "connect: Returned from bindService: " + ret);
     }
 
-    public void displayAvailableServices() {
+    public void updateAvailableServices() {
         List<BluetoothGattService> gattServices = mBluetoothLeService.getSupportedGattServices();
+        Log.d(TAG, "updateAvailableServices: found services: " + gattServices.toString());
 
+
+        // To find the Service which provides us with EEG_DATA, loop through all available services
         for (BluetoothGattService gattService : gattServices) {
             //String service_uuid = gattService.getUuid().toString();
             UUID service_uuid = gattService.getUuid();
-            Log.d(TAG, "displayAvailableServices: "+service_uuid);
+            Log.d(TAG, "updateAvailableServices: "+service_uuid);
 
-            if (TraumschreiberService.BIOSIGNALS_SERVICE_UUID.equals(service_uuid)) {
-                Log.d(TAG, "displayAvailableServices: This one is the BIOSIGNALS_SERVICE");
+            // If the Service ID is the one of the BIOSIGNALS_SERVICE_UUID, we want to be notified on updates
+            if (service_uuid.equals(TraumschreiberToolbox.BIOSIGNALS_SERVICE_UUID)) {
+                Log.d(TAG, "updateAvailableServices: This one is the BIOSIGNALS_SERVICE: " + service_uuid.toString());
                 List<BluetoothGattCharacteristic> gattCharacteristics =
                         gattService.getCharacteristics();
 
-                //String char_uuid;
-                UUID char_uuid;
-                // Loops through available Characteristics.
+                UUID chararcteristic_uuid;
+                // Loops through available Characteristics of the service
                 for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                    chararcteristic_uuid = gattCharacteristic.getUuid();
 
-//                    HashMap<String, String> currentCharaData = new HashMap<String, String>();
-                    //char_uuid = gattCharacteristic.getUuid().toString();
-                    char_uuid = gattCharacteristic.getUuid();
-//                    currentCharaData.put(
-//                            LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
-                    // If not really needed since the filtered service has only one characteristic
-                    if(char_uuid.equals(TraumschreiberService.BIOSIGNALS_UUID)){
-//                        currentCharaData.put(LIST_NAME, "EEG Data Values");
-//                        currentCharaData.put(LIST_UUID, uuid);
-//                        gattCharacteristicGroupData.add(currentCharaData);
-                        Log.d(TAG, "displayAvailableServices: Found Traumschreiber EEG SIGNAL Characteristic");
+                    // If the characteristics is the one of your
+                    if(chararcteristic_uuid.equals(TraumschreiberToolbox.BIOSIGNALS_UUID)){
+                        Log.d(TAG, "updateAvailableServices: Found Traumschreiber EEG SIGNAL Characteristic: " + chararcteristic_uuid.toString());
+
+                        // We want to be notified by the BluetoothLeService on updates of the characteristic. I.e., every time a new signal is measured
                         mBluetoothLeService.setCharacteristicNotification(gattCharacteristic, true);
                     }
                 }
@@ -315,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
 
     //Will hold the attributes of a connected Traumschreiber, when done
     public static boolean mDeviceConnected = false;
-    public static String mDeviceName;
+    public static boolean mDeviceRecording = false;
     public static String mDeviceAddress;
 
 
@@ -357,19 +370,18 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             Log.d(TAG, "onReceive: Received something");
+
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mDeviceConnected = true;
-                updateConnectionState(R.string.connected);
                 updateStatisticsFragment();
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mDeviceConnected = false;
-                updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
                 updateStatisticsFragment();
                 clearUI();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                displayAvailableServices();
+                updateAvailableServices();
                 // Show all the supported services and characteristics on the user interface.
 //                displayGattServices(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
@@ -378,15 +390,46 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
 //                if(recording) {
 //                    storeData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 //                }
+                updateStatisticsFragment();
             }
         }
     };
+
+//    private void updateStatisticsFragment() {
+//        Log.d(TAG, String.format("updateStatisticsFragment: Attempt to update the Statistics fragment with following data: " +
+//                "ID: %1$s, status: %2$s", mDeviceAddress, mDeviceConnected));
+//        Toast.makeText(getBaseContext(), String.format("updateStatisticsFragment: Attempt to update the Statistics fragment with following data: " +
+//                "ID: %1$s, status: %2$s", mDeviceAddress, mDeviceConnected), Toast.LENGTH_SHORT).show();
+//    }
+
 
     private void updateStatisticsFragment() {
         Log.d(TAG, String.format("updateStatisticsFragment: Attempt to update the Statistics fragment with following data: " +
                 "ID: %1$s, status: %2$s", mDeviceAddress, mDeviceConnected));
         Toast.makeText(getBaseContext(), String.format("updateStatisticsFragment: Attempt to update the Statistics fragment with following data: " +
                 "ID: %1$s, status: %2$s", mDeviceAddress, mDeviceConnected), Toast.LENGTH_SHORT).show();
+
+        //Initialise all the ViewElements needed
+        //for the fragment_show_statistics
+        mConnectionStatusTextView = findViewById(R.id.connectionStatusContent);
+        mDeviceIDTextView = findViewById(R.id.deviceIdContent);
+        mChannelsNumTextView = findViewById(R.id.numDataChannelsContent);
+
+
+        if (mDeviceConnected) {
+            mDeviceIDTextView.setText(mDeviceAddress);
+            if (mDeviceRecording) {
+                mConnectionStatusTextView.setText(R.string.recording);
+                mConnectionStatusTextView.setTextColor(COLOR_RECORDING);
+            } else {
+                mConnectionStatusTextView.setText(R.string.connected);
+                mConnectionStatusTextView.setTextColor(COLOR_CONNECTED);
+            }
+        } else {
+            mDeviceIDTextView.setText(R.string.no_device_connected);
+            mConnectionStatusTextView.setText(R.string.disconnected);
+            mConnectionStatusTextView.setTextColor(COLOR_DISCONNECTED);
+        }
     }
 
     // If a given GATT characteristic is selected, check for supported features.  This sample
@@ -423,6 +466,7 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
                 }
             };
 
+
     private void clearUI() {
 //        mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
 //        mDataField.setText(R.string.no_data);
@@ -451,14 +495,6 @@ public class MainActivity extends AppCompatActivity implements ConnectToDeviceFr
         mBluetoothLeService = null;
     }
 
-    private void updateConnectionState(final int resourceId) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                mConnectionState.setText(resourceId);
-//            }
-//        });
-    }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();

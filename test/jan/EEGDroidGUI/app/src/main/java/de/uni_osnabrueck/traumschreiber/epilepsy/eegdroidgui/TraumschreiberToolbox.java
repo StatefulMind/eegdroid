@@ -11,10 +11,10 @@ import java.util.UUID;
 
 
 
-public class TraumschreiberService {
+public class TraumschreiberToolbox {
 
     public final static String VENDOR_PREFIX = "74:72:61:75:6D:";
-    //Names chosen according to the python tflow_edge Traumschreiber.py
+
     public final static UUID BIOSIGNALS_SERVICE_UUID = UUID.fromString("a22686cb-9268-bd91-dd4f-b52d03d85593");
     public final static UUID BIOSIGNALS_UUID = UUID.fromString("faa7b588-19e5-f590-0545-c99f193c5c3e");
     public final static UUID LEDS_UUID = UUID.fromString("fcbea85a-4d87-18a2-2141-0d8d2437c0a4");
@@ -27,13 +27,7 @@ public class TraumschreiberService {
     }
 
     public static boolean isTraumschreiber(BluetoothDevice bluetoothDevice) {
-        return true;
-    }
-
-    String mTraumschreiberDeviceAddress;
-
-    public TraumschreiberService(String traumschreiberDeviceAddress) {
-        this.mTraumschreiberDeviceAddress = traumschreiberDeviceAddress;
+        return isTraumschreiberAddress(bluetoothDevice.getAddress());
     }
 
     /***

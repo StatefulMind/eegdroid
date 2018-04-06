@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -185,6 +184,9 @@ public class ConnectToDeviceFragment extends Fragment {
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
+        if (mBluetoothAdapter == null) {
+            Log.d(TAG, "onCreateView: mBluetoothAdapter null. No idea why");
+        }
 
         // hook up UI elements and adapter for later inflation
         View rootView = inflater.inflate(R.layout.fragment_connect_to_device, container, false);
@@ -208,14 +210,7 @@ public class ConnectToDeviceFragment extends Fragment {
                 Log.d(TAG, "onItemClick: Connecting to device with address " + deviceAddress);
 
 
-                // toss over relevant device information to main Activity;
-                //MainActivity.mDeviceAddress = device.getAddress();
-                //MainActivity.mDeviceName = device.getName();
-
-
-                // connect to the selected device
-                // and toss over relevant information
-                // maybe even better BluetoothDevice?
+                // The MainActivity should then attempt connecting to the selected Device
                 ((MainActivity) getActivity()).connect(deviceAddress);
 
                 // after connecting to a device stop the scanning
@@ -245,6 +240,9 @@ public class ConnectToDeviceFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     mLeDeviceListAdapter.clear();
+
+                    // TODO: If the user presses the button although we are already connected, first disconnect.
+                    // Even better: Do not conduct a new search or disconnect but just tell the user to disconnect himself before searching
 
                     // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
                     // prompt the user to do so else the app will not be able to discover BLE devices
@@ -323,7 +321,7 @@ public class ConnectToDeviceFragment extends Fragment {
         void addDevice(BluetoothDevice device) {
 
             // make sure the device is a real Traumschreiber, if wanted
-            if (FILTER_FOR_TRAUMSCHREIBER && TraumschreiberService.isTraumschreiber(device)) {
+            if (FILTER_FOR_TRAUMSCHREIBER && TraumschreiberToolbox.isTraumschreiber(device)) {
                 // Add a Traumschreiber to the list
                 if (!mLeDevices.contains(device)) {
                     mLeDevices.add(device);

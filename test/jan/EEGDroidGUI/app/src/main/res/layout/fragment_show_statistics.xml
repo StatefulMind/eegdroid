@@ -91,33 +91,18 @@
         android:gravity="bottom"
         android:orientation="vertical">
 
-        <Switch
-            android:id="@+id/switch1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:switchPadding="20dp"
-            android:text="Connected/Disconnected"
-            tools:checked="false" />
-
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView10"
+                android:id="@+id/connectionStatusContent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingEnd="10dp"
-                android:text="Device ID:"
+                android:layout_weight="0"
+                android:text="@string/disconnected"
                 android:textColor="@android:color/black" />
-
-            <TextView
-                android:id="@+id/textView11"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Here is the Traumschreiber ID/MAC" />
 
         </LinearLayout>
 
@@ -127,7 +112,28 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView13"
+                android:id="@+id/deviceID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="10dp"
+                android:text="Device ID:"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/deviceIdContent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_device_connected" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/numDataChannels"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingEnd="10dp"
@@ -135,7 +141,7 @@
                 android:textColor="@android:color/black" />
 
             <TextView
-                android:id="@+id/textView14"
+                android:id="@+id/numDataChannelsContent"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -148,7 +154,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView15"
+                android:id="@+id/someAttribute"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingEnd="10dp"
@@ -156,7 +162,7 @@
                 android:textColor="@android:color/black" />
 
             <TextView
-                android:id="@+id/textView16"
+                android:id="@+id/someAttributeContent"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
