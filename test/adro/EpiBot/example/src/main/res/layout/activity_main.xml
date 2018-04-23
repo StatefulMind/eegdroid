@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -20,8 +20,9 @@
             android:id="@+id/input"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.8"
-            android:hint="@string/input_hint" />
+            android:layout_weight="0.9"
+            android:hint="@string/enter_text"
+            android:digits="abcdefghijklmnopqrstuvwxyz0123456789?. "/>
 
         <ImageButton
             android:id="@+id/mic"
@@ -31,19 +32,19 @@
             android:contentDescription="@string/microphone"
             android:src="@drawable/ic_mic" />
 
-
-        <Button
-            android:id="@+id/conv_button"
+        <ImageButton
+            android:id="@+id/imageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send"
-            android:layout_weight="0.05"/>
+            android:layout_weight="0.05"
+            app:srcCompat="@android:drawable/ic_menu_send" />
+
     </LinearLayout>
 
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="401dp" >
+        android:layout_height="match_parent" >
 
     </ListView>
 

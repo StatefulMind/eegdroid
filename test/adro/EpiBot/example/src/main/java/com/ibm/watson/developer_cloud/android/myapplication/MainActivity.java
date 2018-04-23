@@ -53,6 +53,8 @@ import com.ibm.watson.developer_cloud.conversation.v1.model.MessageRequest;
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageResponse;
 import com.ibm.watson.developer_cloud.http.ServiceCallback;
 
+import static com.ibm.watson.developer_cloud.android.myapplication.R.id.imageButton;
+
 //import org.json.JSONArray;
 //import org.json.JSONException;
 //import org.json.JSONObject;
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
   private Button translate;
   private ImageButton play;
   private TextView translatedText;
-  private Button conv;
+  private ImageButton conv;
   //private Button clear;
 
   private SpeechToText speechService;
@@ -117,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
     //translate = (Button) findViewById(R.id.translate);
     //play = (ImageButton) findViewById(R.id.play);
     //translatedText = (TextView) findViewById(R.id.translated_text);
-    conv = (Button) findViewById(R.id.conv_button);
+    conv = (ImageButton) findViewById(imageButton);
     //clear = (Button) findViewById(R.id.clear_button);
 
     MessageResponse response = null;
