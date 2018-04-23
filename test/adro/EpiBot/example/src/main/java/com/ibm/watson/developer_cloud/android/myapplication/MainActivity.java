@@ -418,10 +418,13 @@ public class MainActivity extends AppCompatActivity {
     //conversationService
     MessageRequest newMessage = new MessageRequest.Builder()
             .inputText(input).context(context).build();
-
-    msgList.add(input);
+    if (input.trim().length() > 0) {
+        input = "User: "+input;
+    };
+    msgList.insert(input,0);
     msgView.setAdapter(msgList);
-    msgView.smoothScrollToPosition(msgList.getCount() - 1);
+    //msgView.smoothScrollToPosition(msgList.getCount() - 1);
+    msgView.smoothScrollToPosition(0);
 
     //cannot use the following as it will attempt to run on the UI thread and crash
 //    MessageResponse response = conversationService.message(workspaceId, newMessage).execute();
@@ -454,11 +457,14 @@ public class MainActivity extends AppCompatActivity {
         //https://www.ibm.com/watson/developercloud/conversation/api/v1/?java#send_message
         //extract the text from output to display to the user
         String text = mssg.getText().get(0);
-
+        text = "EpiBot: " + text;
         //now output the text to the UI to show the chat history
-        msgList.add(text);
+          // msgList.add(text);
+        msgList.insert( text,1);
+
         msgView.setAdapter(msgList);
-        msgView.smoothScrollToPosition(msgList.getCount() - 1);
+        //msgView.smoothScrollToPosition(msgList.getCount() - 1);
+        msgView.smoothScrollToPosition(0); //This needs to be in 0 because we will add in the first place.
 
         //set the context, so that the next time we call WCS we pass the accumulated context
         context = mssg.getContext();
