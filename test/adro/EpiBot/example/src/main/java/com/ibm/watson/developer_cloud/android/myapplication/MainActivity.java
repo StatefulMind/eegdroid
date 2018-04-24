@@ -420,11 +420,13 @@ public class MainActivity extends AppCompatActivity {
             .inputText(input).context(context).build();
     if (input.trim().length() > 0) {
         input = "User: "+input;
+        msgList.add(input);
+        //msgList.insert(input,0);
+        msgView.setAdapter(msgList);
+      //msgView.smoothScrollToPosition(msgList.getCount() - 1);
+        msgView.smoothScrollToPosition(msgList.getCount());
     };
-    msgList.insert(input,0);
-    msgView.setAdapter(msgList);
-    //msgView.smoothScrollToPosition(msgList.getCount() - 1);
-    msgView.smoothScrollToPosition(0);
+
 
     //cannot use the following as it will attempt to run on the UI thread and crash
 //    MessageResponse response = conversationService.message(workspaceId, newMessage).execute();
@@ -460,11 +462,12 @@ public class MainActivity extends AppCompatActivity {
         text = "EpiBot: " + text;
         //now output the text to the UI to show the chat history
           // msgList.add(text);
-        msgList.insert( text,1);
+        //msgList.insert( text,1);
+        msgList.add(text);
 
         msgView.setAdapter(msgList);
         //msgView.smoothScrollToPosition(msgList.getCount() - 1);
-        msgView.smoothScrollToPosition(0); //This needs to be in 0 because we will add in the first place.
+        msgView.smoothScrollToPosition(msgList.getCount()); //This needs to be in 0 because we will add in the first place.
 
         //set the context, so that the next time we call WCS we pass the accumulated context
         context = mssg.getContext();
