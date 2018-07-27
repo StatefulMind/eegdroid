@@ -17,7 +17,8 @@
         android:layout_height="match_parent"
         android:footerDividersEnabled="true"
         android:layout_weight=".8"
-        android:transcriptMode="alwaysScroll">
+        android:transcriptMode="alwaysScroll"
+        android:stackFromBottom="true">
 
 
     </ListView>

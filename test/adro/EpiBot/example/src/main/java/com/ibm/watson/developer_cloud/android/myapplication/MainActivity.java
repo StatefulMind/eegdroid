@@ -33,6 +33,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.HashMap;
 //import java.util.List;
+import java.util.List;
 import java.util.Map;
 
 //import com.google.gson.Gson;
@@ -61,8 +62,8 @@ import static com.ibm.watson.developer_cloud.android.myapplication.R.id.imageBut
 
 
 public class MainActivity extends AppCompatActivity {
-  private final String TAG = "MainActivity";
 
+  private final String TAG = "MainActivity";
   private RadioGroup targetLanguage;
   private EditText input;
   private ImageButton mic;
@@ -70,25 +71,19 @@ public class MainActivity extends AppCompatActivity {
   private ImageButton play;
   private TextView translatedText;
   private ImageButton conv;
-  //private Button clear;
-
   private SpeechToText speechService;
-  //private TextToSpeech textService;
   private LanguageTranslator translationService;
   private Language selectedTargetLanguage = Language.ENGLISH;
   private static ConversationService conversationService;
-
   private StreamPlayer player = new StreamPlayer();
   private MicrophoneHelper microphoneHelper;
-
   private MicrophoneInputStream capture;
   private boolean listening = false;
-
   private Handler handler = new Handler();
   public ListView msgView;
   public ArrayAdapter<String> msgList;
   Map context = new HashMap();
-
+  public int counter_interactions;
 
 
   /**
@@ -100,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    counter_interactions = 0;
 
     microphoneHelper = new MicrophoneHelper(this);
     speechService = initSpeechToTextService();
@@ -237,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
 
   }
 
-
   private void showTranslation(final String translation) {
     runOnUiThread(new Runnable() {
       @Override
@@ -283,24 +278,6 @@ public class MainActivity extends AppCompatActivity {
     service.setEndPoint(getString(R.string.speech_text_url));
     return service;
   }
-
-  /*private TextToSpeech initTextToSpeechService() {
-    TextToSpeech service = new TextToSpeech();
-    String username = getString(R.string.text_speech_username);
-    String password = getString(R.string.text_speech_password);
-    service.setUsernameAndPassword(username, password);
-    service.setEndPoint(getString(R.string.text_speech_url));
-    return service;
-  }*/
-
-/*  private LanguageTranslator initLanguageTranslatorService() {
-    LanguageTranslator service = new LanguageTranslator();
-    String username = getString(R.string.language_translator_username);
-    String password = getString(R.string.language_translator_password);
-    service.setUsernameAndPassword(username, password);
-    service.setEndPoint(getString(R.string.language_translator_url));
-    return service;
-  }*/
 
   private ConversationService initConversationService() {
     ConversationService service = new ConversationService(ConversationService.VERSION_DATE_2016_07_11);
@@ -362,24 +339,6 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-/*  private class TranslationTask extends AsyncTask<String, Void, String> {
-
-    @Override
-    protected String doInBackground(String... params) {
-      showTranslation(translationService.translate(params[0], Language.ENGLISH, selectedTargetLanguage).execute()
-          .getFirstTranslation());
-      return "Did translate";
-    }
-  }*/
-
-  /*private class SynthesisTask extends AsyncTask<String, Void, String> {
-
-    @Override
-    protected String doInBackground(String... params) {
-      player.playStream(textService.synthesize(params[0], Voice.EN_LISA).execute());
-      return "Did synthesize";
-    }
-  }*/
 
   /**
    * On request permissions result.
@@ -424,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
         //msgList.insert(input,0);
         msgView.setAdapter(msgList);
       //msgView.smoothScrollToPosition(msgList.getCount() - 1);
-        msgView.smoothScrollToPosition(msgList.getCount());
+       // msgView.smoothScrollToPosition(msgList.getCount()+1);
     };
 
 
@@ -432,13 +391,16 @@ public class MainActivity extends AppCompatActivity {
 //    MessageResponse response = conversationService.message(workspaceId, newMessage).execute();
 
     //use the following so it runs on own async thread
-    //then when get a response it calls displayMsg that will update the UI
+    //then when get a response it calls displaMsg that will update the UI
     conversationService.message(workspaceId, newMessage).enqueue(new ServiceCallback<MessageResponse>() {
       @Override
       public void onResponse(MessageResponse response) {
         //output to system log output, just for verification/checking
+
         System.out.println(response);
         displayMsg(response);
+        //msgView.smoothScrollToPosition(msgList.getCount());
+
       }
       @Override
       public void onFailure(Exception e) {
@@ -455,22 +417,61 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void run() {
 
+        List<String>  texts = mssg.getText();
+
+        for (String element : texts) {
+
+          int delay = 1000 * (element.length()/25);
+          try
+          {
+            Thread.sleep(delay);
+          }
+          catch(InterruptedException ex)
+          {
+            Thread.currentThread().interrupt();
+          }
+          element = "EpiBot: " + element;
+          //now output the text to the UI to show the chat history
+          // msgList.add(text);
+          //msgList.insert( text,1);
+          msgList.add(element);
+
+          msgView.setAdapter(msgList);
+          //msgView.smoothScrollToPosition(msgList.getCount() - 1);
+         // msgView.smoothScrollToPosition(msgList.getCount()+1); //This needs to be in 0 because we will add in the first place.
+
+          //set the context, so that the next time we call WCS we pass the accumulated context
+          context = mssg.getContext();
+
+        }
+
+
         //from the WCS API response
         //https://www.ibm.com/watson/developercloud/conversation/api/v1/?java#send_message
         //extract the text from output to display to the user
-        String text = mssg.getText().get(0);
-        text = "EpiBot: " + text;
+        //String text = mssg.getText().get(0);
+        //int delay = 1000 + text.length() * 3;
+//        int delay = 1250 * (text.length()/25);
+//        try
+//          {
+//              Thread.sleep(delay);
+//          }
+//          catch(InterruptedException ex)
+//          {
+        //      Thread.currentThread().interrupt();
+        //  }
+        //text = "EpiBot: " + text;
         //now output the text to the UI to show the chat history
           // msgList.add(text);
         //msgList.insert( text,1);
-        msgList.add(text);
+        //msgList.add(text);
 
-        msgView.setAdapter(msgList);
+        //msgView.setAdapter(msgList);
         //msgView.smoothScrollToPosition(msgList.getCount() - 1);
-        msgView.smoothScrollToPosition(msgList.getCount()); //This needs to be in 0 because we will add in the first place.
+        //msgView.smoothScrollToPosition(msgList.getCount()); //This needs to be in 0 because we will add in the first place.
 
         //set the context, so that the next time we call WCS we pass the accumulated context
-        context = mssg.getContext();
+        //context = mssg.getContext();
 
         //rather than converting response to a JSONObject and parsing through it
         //we can use the APIs for the MessageResponse .getXXXXX() to get the values as shown above
@@ -517,3 +518,40 @@ public class MainActivity extends AppCompatActivity {
   };
 
 }
+/*  private class TranslationTask extends AsyncTask<String, Void, String> {
+
+    @Override
+    protected String doInBackground(String... params) {
+      showTranslation(translationService.translate(params[0], Language.ENGLISH, selectedTargetLanguage).execute()
+          .getFirstTranslation());
+      return "Did translate";
+    }
+  }*/
+
+  /*private class SynthesisTask extends AsyncTask<String, Void, String> {
+
+    @Override
+    protected String doInBackground(String... params) {
+      player.playStream(textService.synthesize(params[0], Voice.EN_LISA).execute());
+      return "Did synthesize";
+    }
+  }*/
+
+
+  /*private TextToSpeech initTextToSpeechService() {
+    TextToSpeech service = new TextToSpeech();
+    String username = getString(R.string.text_speech_username);
+    String password = getString(R.string.text_speech_password);
+    service.setUsernameAndPassword(username, password);
+    service.setEndPoint(getString(R.string.text_speech_url));
+    return service;
+  }*/
+
+/*  private LanguageTranslator initLanguageTranslatorService() {
+    LanguageTranslator service = new LanguageTranslator();
+    String username = getString(R.string.language_translator_username);
+    String password = getString(R.string.language_translator_password);
+    service.setUsernameAndPassword(username, password);
+    service.setEndPoint(getString(R.string.language_translator_url));
+    return service;
+  }*/
