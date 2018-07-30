@@ -421,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (String element : texts) {
 
-          int delay = 1000 * (element.length()/25);
+ /*         int delay = 1000 * (element.length()/25);
           try
           {
             Thread.sleep(delay);
@@ -429,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
           catch(InterruptedException ex)
           {
             Thread.currentThread().interrupt();
-          }
+          }*/
           element = "EpiBot: " + element;
           //now output the text to the UI to show the chat history
           // msgList.add(text);
