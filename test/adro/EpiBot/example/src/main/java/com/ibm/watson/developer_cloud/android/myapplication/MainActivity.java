@@ -35,6 +35,8 @@ import java.util.HashMap;
 //import java.util.List;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
 //import com.google.gson.Gson;
 import com.ibm.watson.developer_cloud.android.library.audio.MicrophoneHelper;
@@ -396,7 +398,6 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onResponse(MessageResponse response) {
         //output to system log output, just for verification/checking
-
         System.out.println(response);
         displayMsg(response);
         //msgView.smoothScrollToPosition(msgList.getCount());
@@ -412,38 +413,35 @@ public class MainActivity extends AppCompatActivity {
   public void displayMsg(MessageResponse msg)
   {
     final MessageResponse mssg=msg;
+
+
+    
+
     handler.post(new Runnable() {
 
       @Override
       public void run() {
 
-        List<String>  texts = mssg.getText();
-
+        String text = mssg.getText().get(0);
+        String[] textSplit = text.split(Pattern.quote(". "));
+        List<String> texts = Arrays.asList(textSplit);
         for (String element : texts) {
 
- /*         int delay = 1000 * (element.length()/25);
-          try
-          {
-            Thread.sleep(delay);
-          }
-          catch(InterruptedException ex)
-          {
-            Thread.currentThread().interrupt();
-          }*/
+//         int delay = 1000;// * (element.length()/25);
+//          try
+//          {
+//              Thread.sleep(delay);
+//          }
+//          catch(InterruptedException ex)
+//          {
+//              Thread.currentThread().interrupt();
+//          }
           element = "EpiBot: " + element;
-          //now output the text to the UI to show the chat history
-          // msgList.add(text);
-          //msgList.insert( text,1);
           msgList.add(element);
-
           msgView.setAdapter(msgList);
-          //msgView.smoothScrollToPosition(msgList.getCount() - 1);
-         // msgView.smoothScrollToPosition(msgList.getCount()+1); //This needs to be in 0 because we will add in the first place.
-
-          //set the context, so that the next time we call WCS we pass the accumulated context
           context = mssg.getContext();
 
-        }
+      }
 
 
         //from the WCS API response
