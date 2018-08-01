@@ -29,6 +29,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+import android.content.Context;
 
 //import com.google.gson.Gson;
 import com.ibm.watson.developer_cloud.android.library.audio.MicrophoneHelper;
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
   public ArrayAdapter<String> msgList;
   Map context = new HashMap();
   public int counter_interactions;
+
 
 
   /**
@@ -410,41 +413,63 @@ public class MainActivity extends AppCompatActivity {
     });
   };
 
-  public void displayMsg(MessageResponse msg)
-  {
-    final MessageResponse mssg=msg;
+//  public void displayMsg(MessageResponse msg) {
+//    final MessageResponse mssg=msg;
+//    final String text = mssg.getText().get(0);
+//    final String[] textSplit = text.split(Pattern.quote(". "));
+//    final List<String> texts = Arrays.asList(textSplit);
+//
+//    handler.post(new Runnable() {
+//        for (final String element: texts) {
+//                @Override
+//                public void run(){
+//                    int delay = 1000;// * (element.length()/25);
+//                    try {
+//                        Thread.sleep(delay);
+//                    } catch(InterruptedException ex) {
+//                        Thread.currentThread().interrupt();
+//                    }
+//                    msgList.add("EpiBot: " + element);
+//                    msgView.setAdapter(msgList);
+//                    context = mssg.getContext();
+//                }
+//        }
+//    });
+//
+//  }; //good
+
+    public void displayMsg(MessageResponse msg) {
+        final MessageResponse mssg=msg;
+        final String text = mssg.getText().get(0);
+        final String[] textSplit = text.split(Pattern.quote(". "));
+        final List<String> texts = Arrays.asList(textSplit);
+
+        for (final String element : texts) {
+
+            int delay = 1000 * (element.length()/25);
+            try {
+                Thread.sleep(delay);
+            } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(100);
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    msgList.add("EpiBot: " + element);
+                    msgView.setAdapter(msgList);
+                    context = mssg.getContext();
+                }
+            });
+        }
+    };
 
 
-    
-
-    handler.post(new Runnable() {
-
-      @Override
-      public void run() {
-
-        String text = mssg.getText().get(0);
-        String[] textSplit = text.split(Pattern.quote(". "));
-        List<String> texts = Arrays.asList(textSplit);
-        for (String element : texts) {
-
-//         int delay = 1000;// * (element.length()/25);
-//          try
-//          {
-//              Thread.sleep(delay);
-//          }
-//          catch(InterruptedException ex)
-//          {
-//              Thread.currentThread().interrupt();
-//          }
-          element = "EpiBot: " + element;
-          msgList.add(element);
-          msgView.setAdapter(msgList);
-          context = mssg.getContext();
-
-      }
-
-
-        //from the WCS API response
+    //from the WCS API response
         //https://www.ibm.com/watson/developercloud/conversation/api/v1/?java#send_message
         //extract the text from output to display to the user
         //String text = mssg.getText().get(0);
@@ -510,10 +535,9 @@ public class MainActivity extends AppCompatActivity {
             }
           }
 */
-      }
-    });
 
-  };
+
+
 
 }
 /*  private class TranslationTask extends AsyncTask<String, Void, String> {
