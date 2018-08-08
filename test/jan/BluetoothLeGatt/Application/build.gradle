@@ -10,7 +10,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.2'
 
     defaultConfig {
         minSdkVersion 21 // 18 is the minimum for BLE, 21 for using ND4J
@@ -48,17 +48,18 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:support-v13:27.0.1'
-    implementation 'com.android.support:cardview-v7:27.0.1'
-    implementation 'com.android.support:appcompat-v7:27.0.1'
-    implementation 'org.bytedeco:javacpp:1.4'
-    implementation 'org.bytedeco.javacpp-presets:openblas:0.2.20-1.4:android-arm'
-    implementation 'org.bytedeco.javacpp-presets:openblas:0.2.20-1.4:android-x86'
-    compileOnly 'org.projectlombok:lombok:1.16.20'
-    annotationProcessor 'org.projectlombok:lombok:1.16.20'
-    implementation 'org.nd4j:nd4j-native:0.9.1'
-    implementation 'org.nd4j:nd4j-native:0.9.1:android-arm'
-    implementation 'org.nd4j:nd4j-native:0.9.1:android-x86'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:support-v13:27.1.1'
+    implementation 'com.android.support:cardview-v7:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'org.bytedeco:javacpp:1.4.2'
+    implementation 'org.bytedeco.javacpp-presets:openblas:0.3.0-1.4.2:android-arm'
+    implementation 'org.bytedeco.javacpp-presets:openblas:0.3.0-1.4.2:android-x86'
+    compileOnly 'org.projectlombok:lombok:1.18.2'
+    annotationProcessor 'org.projectlombok:lombok:1.18.2'
+    implementation 'org.nd4j:nd4j-native:1.0.0-beta'
+    implementation 'org.nd4j:nd4j-native:1.0.0-beta:android-arm'
+    implementation 'org.nd4j:nd4j-native:1.0.0-beta:android-x86'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
     implementation 'com.google.code.findbugs:annotations:3.0.1', {
