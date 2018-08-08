@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/display_and_record" />
             <option value="$PROJECT_DIR$/epibot" />
             <option value="$PROJECT_DIR$/library" />
+            <option value="$PROJECT_DIR$/time_freq_analysis" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
