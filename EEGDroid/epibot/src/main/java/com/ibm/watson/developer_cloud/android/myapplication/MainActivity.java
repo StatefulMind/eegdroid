@@ -15,70 +15,55 @@ package com.ibm.watson.developer_cloud.android.myapplication;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.os.VibrationEffect;
 import java.util.HashMap;
-//import java.util.List;
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.regex.Pattern;
-import android.content.Context;
-
-//import com.google.gson.Gson;
+//import android.content.Context;
 import com.ibm.watson.developer_cloud.android.library.audio.MicrophoneHelper;
 import com.ibm.watson.developer_cloud.android.library.audio.MicrophoneInputStream;
 import com.ibm.watson.developer_cloud.android.library.audio.StreamPlayer;
 import com.ibm.watson.developer_cloud.android.library.audio.utils.ContentType;
-import com.ibm.watson.developer_cloud.language_translator.v2.LanguageTranslator;
-import com.ibm.watson.developer_cloud.language_translator.v2.model.Language;
+import com.ibm.watson.developer_cloud.conversation.v1.model.OutputData;
 import com.ibm.watson.developer_cloud.speech_to_text.v1.SpeechToText;
 import com.ibm.watson.developer_cloud.speech_to_text.v1.model.RecognizeOptions;
-import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechResults;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechRecognitionResults;
 import com.ibm.watson.developer_cloud.speech_to_text.v1.websocket.BaseRecognizeCallback;
-//import com.ibm.watson.developer_cloud.text_to_speech.v1.TextToSpeech;
-//import com.ibm.watson.developer_cloud.text_to_speech.v1.model.Voice;
-import com.ibm.watson.developer_cloud.conversation.v1.ConversationService;
+import com.ibm.watson.developer_cloud.conversation.v1.Conversation;
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageRequest;
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageResponse;
 import com.ibm.watson.developer_cloud.http.ServiceCallback;
+import com.ibm.watson.developer_cloud.conversation.v1.model.InputData;
+import static com.ibm.watson.developer_cloud.android.myapplication.R.id.imageButton; //This is wrong.
+import com.ibm.watson.developer_cloud.conversation.v1.model.Context;
+import android.os.Build;
+import com.ibm.watson.developer_cloud.conversation.v1.model.MessageOptions;
 
-import static com.ibm.watson.developer_cloud.android.myapplication.R.id.imageButton;
-
-//import org.json.JSONArray;
-//import org.json.JSONException;
-//import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity {
 
   private final String TAG = "MainActivity";
-  private RadioGroup targetLanguage;
   private EditText input;
   private ImageButton mic;
-  private Button translate;
-  private ImageButton play;
-  private TextView translatedText;
   private ImageButton conv;
-  private SpeechToText speechService;
-  private LanguageTranslator translationService;
-  private Language selectedTargetLanguage = Language.ENGLISH;
-  private static ConversationService conversationService;
+  private SpeechToText speechToText;
+  private static Conversation conversationService;
   private StreamPlayer player = new StreamPlayer();
   private MicrophoneHelper microphoneHelper;
   private MicrophoneInputStream capture;
@@ -86,8 +71,10 @@ public class MainActivity extends AppCompatActivity {
   private Handler handler = new Handler();
   public ListView msgView;
   public ArrayAdapter<String> msgList;
-  Map context = new HashMap();
+  //Map context = new HashMap();
+  public Context context;
   public int counter_interactions;
+
 
 
 
@@ -101,58 +88,19 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     counter_interactions = 0;
-
     microphoneHelper = new MicrophoneHelper(this);
-    speechService = initSpeechToTextService();
-    //textService = initTextToSpeechService();
-    //translationService = initLanguageTranslatorService();
+    speechToText = initSpeechToTextService();
     conversationService = initConversationService();
-    // set the workspace id for WCS
     final String inputWorkspaceId = getString(R.string.conversation_workspaceId);
-
     msgView = (ListView) findViewById(R.id.listView);
     msgList = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
     msgView.setAdapter(msgList);
-
-    //targetLanguage = (RadioGroup) findViewById(R.id.target_language);
     input = (EditText) findViewById(R.id.input);
     mic = (ImageButton) findViewById(R.id.mic);
-    //translate = (Button) findViewById(R.id.translate);
-    //play = (ImageButton) findViewById(R.id.play);
-    //translatedText = (TextView) findViewById(R.id.translated_text);
     conv = (ImageButton) findViewById(imageButton);
-    //clear = (Button) findViewById(R.id.clear_button);
-
     MessageResponse response = null;
     conversationAPI(String.valueOf(input.getText()), context, inputWorkspaceId);
 
-    /*targetLanguage.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-      @Override
-      public void onCheckedChanged(RadioGroup group, int checkedId) {
-        switch (checkedId) {
-          case R.id.spanish:
-            selectedTargetLanguage = Language.SPANISH;
-            break;
-          case R.id.french:
-            selectedTargetLanguage = Language.FRENCH;
-            break;
-          case R.id.italian:
-            selectedTargetLanguage = Language.ITALIAN;
-            break;
-        }
-      }
-    });*/
-
-    /*input.addTextChangedListener(new EmptyTextWatcher() {
-      @Override
-      public void onEmpty(boolean empty) {
-        //if (empty) {
-          translate.setEnabled(false);
-        /*} else {
-          translate.setEnabled(true);
-        }
-      }
-    });*/
 
     mic.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -164,8 +112,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
               try {
-                speechService.recognizeUsingWebSocket(capture, getRecognizeOptions(),
-                    new MicrophoneRecognizeDelegate());
+
+
+
+
+                  speechToText.recognizeUsingWebSocket(getRecognizeOptions(capture), new MicrophoneRecognizeDelegate());
               } catch (Exception e) {
                 showError(e);
               }
@@ -179,24 +130,6 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
- /*   translate.setOnClickListener(new View.OnClickListener() {
-
-      @Override
-      public void onClick(View v) {
-        new TranslationTask().execute(input.getText().toString());
-      }
-    });*/
-
-   /* translatedText.addTextChangedListener(new EmptyTextWatcher() {
-      @Override
-      public void onEmpty(boolean empty) {
-        if (empty) {
-          play.setEnabled(false);
-        } else {
-          play.setEnabled(true);
-        }
-      }
-    });*/
 
 
     conv.setOnClickListener(new View.OnClickListener() {
@@ -210,42 +143,19 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-//    clear.setOnClickListener(new View.OnClickListener() {
+
+
+
+  }
+
+//  private void showTranslation(final String translation) {
+//    runOnUiThread(new Runnable() {
 //      @Override
-//      public void onClick(View v) {
-//        //pressing the [Clear] button should clear the context
-//        //in essence starting the conversation again from scratch
-//        context = new HashMap();
-//        //should also clear the msgList
-//        msgList.clear();;
-//        msgView.setAdapter(msgList);
-//        msgView.smoothScrollToPosition(msgList.getCount() - 1);
-//        //invoke the initial message from WCS
-//        MessageResponse response = null;
-//        conversationAPI(String.valueOf(input.getText()), context, inputWorkspaceId);
+//      public void run() {
+//        translatedText.setText(translation);
 //      }
 //    });
-
-
-//    play.setEnabled(false);
-
-    /*play.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        new SynthesisTask().execute(translatedText.getText().toString());
-      }
-    });*/
-
-  }
-
-  private void showTranslation(final String translation) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        translatedText.setText(translation);
-      }
-    });
-  }
+//  }
 
   private void showError(final Exception e) {
     runOnUiThread(new Runnable() {
@@ -284,8 +194,8 @@ public class MainActivity extends AppCompatActivity {
     return service;
   }
 
-  private ConversationService initConversationService() {
-    ConversationService service = new ConversationService(ConversationService.VERSION_DATE_2016_07_11);
+  private Conversation initConversationService() {
+    Conversation service = new Conversation("2018-07-10");
     String username = getString(R.string.conversation_username);
     String password = getString(R.string.conversation_password);
     service.setUsernameAndPassword(username, password);
@@ -293,9 +203,11 @@ public class MainActivity extends AppCompatActivity {
     return service;
   }
 
-  private RecognizeOptions getRecognizeOptions() {
-    return new RecognizeOptions.Builder().continuous(true).contentType(ContentType.OPUS.toString())
-        .model("en-US_BroadbandModel").interimResults(true).inactivityTimeout(2000).build();
+  private RecognizeOptions getRecognizeOptions(MicrophoneInputStream capture) {
+    //return new RecognizeOptions.Builder().continuous(true).contentType(ContentType.OPUS.toString())
+    //    .model("en-US_BroadbandModel").interimResults(true).inactivityTimeout(2000).build();
+      return new RecognizeOptions.Builder().audio(capture).contentType(ContentType.OPUS.toString())
+              .model("en-US_BroadbandModel").inactivityTimeout(2000).build();
   }
 
   private abstract class EmptyTextWatcher implements TextWatcher {
@@ -324,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
   private class MicrophoneRecognizeDelegate extends BaseRecognizeCallback {
 
     @Override
-    public void onTranscription(SpeechResults speechResults) {
+    public void onTranscription( SpeechRecognitionResults speechResults) {
       System.out.println(speechResults);
       if (speechResults.getResults() != null && !speechResults.getResults().isEmpty()) {
         String text = speechResults.getResults().get(0).getAlternatives().get(0).getTranscript();
@@ -373,35 +285,33 @@ public class MainActivity extends AppCompatActivity {
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    //do nothing special
   }
 
 
-  public void conversationAPI(String input, Map context, String workspaceId) {
+  public void conversationAPI(String input, Context context, String workspaceId) {
+
+      InputData.Builder inputDataBuilder = new InputData.Builder(input);
+      InputData inputData = inputDataBuilder.build();
 
     //conversationService
-    MessageRequest newMessage = new MessageRequest.Builder()
-            .inputText(input).context(context).build();
+    //MessageRequest newMessage = new MessageRequest().setInput(inputData).getContext(context).build();
+      MessageRequest newMessage = new MessageRequest();
+      newMessage.setInput(inputData);
+      newMessage.setContext(context);
     if (input.trim().length() > 0) {
-        input = "User: "+input;
+        input = "User: " + input;
         msgList.add(input);
-        //msgList.insert(input,0);
         msgView.setAdapter(msgList);
-      //msgView.smoothScrollToPosition(msgList.getCount() - 1);
-       // msgView.smoothScrollToPosition(msgList.getCount()+1);
     };
 
+    MessageOptions messageOptions = new MessageOptions.Builder().workspaceId(workspaceId).messageRequest(newMessage).context(context).input(inputData).build();
 
-    //cannot use the following as it will attempt to run on the UI thread and crash
-//    MessageResponse response = conversationService.message(workspaceId, newMessage).execute();
 
-    //use the following so it runs on own async thread
-    //then when get a response it calls displaMsg that will update the UI
-    conversationService.message(workspaceId, newMessage).enqueue(new ServiceCallback<MessageResponse>() {
+    conversationService.message(messageOptions).enqueue(new ServiceCallback<MessageResponse>() {
       @Override
       public void onResponse(MessageResponse response) {
         //output to system log output, just for verification/checking
-        System.out.println(response);
+        //System.out.println(response);
         displayMsg(response);
         //msgView.smoothScrollToPosition(msgList.getCount());
 
@@ -413,167 +323,43 @@ public class MainActivity extends AppCompatActivity {
     });
   };
 
-//  public void displayMsg(MessageResponse msg) {
-//    final MessageResponse mssg=msg;
-//    final String text = mssg.getText().get(0);
-//    final String[] textSplit = text.split(Pattern.quote(". "));
-//    final List<String> texts = Arrays.asList(textSplit);
-//
-//    handler.post(new Runnable() {
-//        for (final String element: texts) {
-//                @Override
-//                public void run(){
-//                    int delay = 1000;// * (element.length()/25);
-//                    try {
-//                        Thread.sleep(delay);
-//                    } catch(InterruptedException ex) {
-//                        Thread.currentThread().interrupt();
-//                    }
-//                    msgList.add("EpiBot: " + element);
-//                    msgView.setAdapter(msgList);
-//                    context = mssg.getContext();
-//                }
-//        }
-//    });
-//
-//  }; //good
+
 
     public void displayMsg(MessageResponse msg) {
         final MessageResponse mssg=msg;
-        final String text = mssg.getText().get(0);
+        OutputData outputData = new OutputData();
+        outputData = mssg.getOutput();
+
+        //Acá va el if según el tipo de output
+        final String text = outputData.getText().get(0);
+
         final String[] textSplit = text.split(Pattern.quote(". "));
         final List<String> texts = Arrays.asList(textSplit);
 
         for (final String element : texts) {
 
-            int delay = 1000 * (element.length()/25);
+            int delay = 750 * (element.length()/25);
             try {
                 Thread.sleep(delay);
             } catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
 
-            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-            v.vibrate(100);
+            if (Build.VERSION.SDK_INT >= 26) {
+                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(100);
+            }
 
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-
-                    msgList.add("EpiBot: " + element);
-                    msgView.setAdapter(msgList);
-                    context = mssg.getContext();
+                  msgList.add("EpiBot: " + element);
+                  msgView.setAdapter(msgList);
+                  context = mssg.getContext();
                 }
             });
         }
     };
 
-
-    //from the WCS API response
-        //https://www.ibm.com/watson/developercloud/conversation/api/v1/?java#send_message
-        //extract the text from output to display to the user
-        //String text = mssg.getText().get(0);
-        //int delay = 1000 + text.length() * 3;
-//        int delay = 1250 * (text.length()/25);
-//        try
-//          {
-//              Thread.sleep(delay);
-//          }
-//          catch(InterruptedException ex)
-//          {
-        //      Thread.currentThread().interrupt();
-        //  }
-        //text = "EpiBot: " + text;
-        //now output the text to the UI to show the chat history
-          // msgList.add(text);
-        //msgList.insert( text,1);
-        //msgList.add(text);
-
-        //msgView.setAdapter(msgList);
-        //msgView.smoothScrollToPosition(msgList.getCount() - 1);
-        //msgView.smoothScrollToPosition(msgList.getCount()); //This needs to be in 0 because we will add in the first place.
-
-        //set the context, so that the next time we call WCS we pass the accumulated context
-        //context = mssg.getContext();
-
-        //rather than converting response to a JSONObject and parsing through it
-        //we can use the APIs for the MessageResponse .getXXXXX() to get the values as shown above
-        //keeping the following just in case need this at a later date
-        //
-        //          https://developer.android.com/reference/org/json/JSONObject.html
-/*
-          JSONObject jObject = new JSONObject(mssg);
-          JSONObject jsonOutput = jObject.getJSONObject("output");
-          JSONArray jArray1 = jsonOutput.getJSONArray("text");
-          for (int i=0; i < jArray1.length(); i++)
-          {
-            try {
-              String textContent = String.valueOf(jArray1.getString(i));
-              System.out.println(textContent);
-              msgList.add(textContent);
-              msgView.setAdapter(msgList);
-              msgView.smoothScrollToPosition(msgList.getCount() - 1);
-            } catch (JSONException e) {
-              // Oops
-              System.out.println(e);
-            }
-          }
-          JSONArray jArray2 = jObject.getJSONArray("intents");
-          for (int i=0; i < jArray2.length(); i++)
-          {
-            try {
-              JSONObject oneObject = jArray2.getJSONObject(i);
-              // Pulling items from the array
-              String oneObjectsItem = oneObject.getString("confidence");
-              String oneObjectsItem2 = oneObject.getString("intent");
-              String jOutput = oneObjectsItem+" : "+oneObjectsItem2;
-              msgList.add(jOutput);
-              msgView.setAdapter(msgList);
-              msgView.smoothScrollToPosition(msgList.getCount() - 1);
-            } catch (JSONException e) {
-              // Oops
-            }
-          }
-*/
-
-
-
-
 }
-/*  private class TranslationTask extends AsyncTask<String, Void, String> {
-
-    @Override
-    protected String doInBackground(String... params) {
-      showTranslation(translationService.translate(params[0], Language.ENGLISH, selectedTargetLanguage).execute()
-          .getFirstTranslation());
-      return "Did translate";
-    }
-  }*/
-
-  /*private class SynthesisTask extends AsyncTask<String, Void, String> {
-
-    @Override
-    protected String doInBackground(String... params) {
-      player.playStream(textService.synthesize(params[0], Voice.EN_LISA).execute());
-      return "Did synthesize";
-    }
-  }*/
-
-
-  /*private TextToSpeech initTextToSpeechService() {
-    TextToSpeech service = new TextToSpeech();
-    String username = getString(R.string.text_speech_username);
-    String password = getString(R.string.text_speech_password);
-    service.setUsernameAndPassword(username, password);
-    service.setEndPoint(getString(R.string.text_speech_url));
-    return service;
-  }*/
-
-/*  private LanguageTranslator initLanguageTranslatorService() {
-    LanguageTranslator service = new LanguageTranslator();
-    String username = getString(R.string.language_translator_username);
-    String password = getString(R.string.language_translator_password);
-    service.setUsernameAndPassword(username, password);
-    service.setEndPoint(getString(R.string.language_translator_url));
-    return service;
-  }*/
