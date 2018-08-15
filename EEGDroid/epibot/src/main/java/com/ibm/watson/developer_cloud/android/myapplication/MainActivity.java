@@ -16,7 +16,6 @@ package com.ibm.watson.developer_cloud.android.myapplication;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -29,12 +28,10 @@ import android.os.Vibrator;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.os.VibrationEffect;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Arrays;
-import java.util.regex.Pattern;
-//import android.content.Context;
+import java.util.regex.Pattern;;
 import com.ibm.watson.developer_cloud.android.library.audio.MicrophoneHelper;
 import com.ibm.watson.developer_cloud.android.library.audio.MicrophoneInputStream;
 import com.ibm.watson.developer_cloud.android.library.audio.StreamPlayer;
@@ -71,10 +68,12 @@ public class MainActivity extends AppCompatActivity {
   private Handler handler = new Handler();
   public ListView msgView;
   public ArrayAdapter<String> msgList;
-  //Map context = new HashMap();
+  public ArrayList<String[]> messages;
+  public MessageAdapter adapter;
   public Context context;
   public int counter_interactions;
-
+  public String usersname;
+  public String botsname;
 
 
 
@@ -100,6 +99,11 @@ public class MainActivity extends AppCompatActivity {
     conv = (ImageButton) findViewById(imageButton);
     MessageResponse response = null;
     conversationAPI(String.valueOf(input.getText()), context, inputWorkspaceId);
+    messages = new ArrayList<String[]>();
+    adapter = new MessageAdapter(this, R.layout.adapter_view_layout, messages);
+    usersname = "Otto";
+    botsname = "Epibot";
+
 
 
     mic.setOnClickListener(new View.OnClickListener() {
@@ -112,10 +116,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
               try {
-
-
-
-
                   speechToText.recognizeUsingWebSocket(getRecognizeOptions(capture), new MicrophoneRecognizeDelegate());
               } catch (Exception e) {
                 showError(e);
@@ -143,19 +143,8 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-
-
-
   }
 
-//  private void showTranslation(final String translation) {
-//    runOnUiThread(new Runnable() {
-//      @Override
-//      public void run() {
-//        translatedText.setText(translation);
-//      }
-//    });
-//  }
 
   private void showError(final Exception e) {
     runOnUiThread(new Runnable() {
@@ -204,8 +193,6 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private RecognizeOptions getRecognizeOptions(MicrophoneInputStream capture) {
-    //return new RecognizeOptions.Builder().continuous(true).contentType(ContentType.OPUS.toString())
-    //    .model("en-US_BroadbandModel").interimResults(true).inactivityTimeout(2000).build();
       return new RecognizeOptions.Builder().audio(capture).contentType(ContentType.OPUS.toString())
               .model("en-US_BroadbandModel").inactivityTimeout(2000).build();
   }
@@ -293,28 +280,22 @@ public class MainActivity extends AppCompatActivity {
       InputData.Builder inputDataBuilder = new InputData.Builder(input);
       InputData inputData = inputDataBuilder.build();
 
-    //conversationService
-    //MessageRequest newMessage = new MessageRequest().setInput(inputData).getContext(context).build();
       MessageRequest newMessage = new MessageRequest();
       newMessage.setInput(inputData);
       newMessage.setContext(context);
+
     if (input.trim().length() > 0) {
-        input = "User: " + input;
-        msgList.add(input);
-        msgView.setAdapter(msgList);
+        String[] user_and_input = {usersname, input};
+        messages.add(user_and_input);
+        msgView.setAdapter(adapter);
     };
 
     MessageOptions messageOptions = new MessageOptions.Builder().workspaceId(workspaceId).messageRequest(newMessage).context(context).input(inputData).build();
 
-
     conversationService.message(messageOptions).enqueue(new ServiceCallback<MessageResponse>() {
       @Override
       public void onResponse(MessageResponse response) {
-        //output to system log output, just for verification/checking
-        //System.out.println(response);
         displayMsg(response);
-        //msgView.smoothScrollToPosition(msgList.getCount());
-
       }
       @Override
       public void onFailure(Exception e) {
@@ -330,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
         OutputData outputData = new OutputData();
         outputData = mssg.getOutput();
 
-        //Acá va el if según el tipo de output
+
         final String text = outputData.getText().get(0);
 
         final String[] textSplit = text.split(Pattern.quote(". "));
@@ -354,8 +335,9 @@ public class MainActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                  msgList.add("EpiBot: " + element);
-                  msgView.setAdapter(msgList);
+                  String[] bot_and_input = {botsname, element};
+                  messages.add(bot_and_input);
+                  msgView.setAdapter(adapter);
                   context = mssg.getContext();
                 }
             });

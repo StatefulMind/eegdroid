@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="100" >
+
+    <TextView
+        android:id="@+id/UserTextView"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:text="User"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="80" />
+
+    <TextView
+        android:id="@+id/MessageTextView"
+        android:gravity="left"
+        android:textAlignment="center"
+        android:text="Message"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="20"/>
+
+</LinearLayout>
