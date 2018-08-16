@@ -6,22 +6,30 @@
     android:layout_height="match_parent"
     android:weightSum="100" >
 
+
     <TextView
         android:id="@+id/UserTextView"
-        android:gravity="center"
         android:textAlignment="center"
         android:text="User"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="80" />
+        android:layout_height="50dp"
+        android:layout_weight="80"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:drawableTop= "@mipmap/ic_face_black_48dp"
+        />
 
     <TextView
         android:id="@+id/MessageTextView"
         android:gravity="left"
-        android:textAlignment="center"
+        android:textAlignment="viewStart"
         android:text="Message"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="20"/>
+        android:layout_weight="20"
+        android:textStyle="italic"
+        android:textSize="14sp"
+        />
 
 </LinearLayout>
