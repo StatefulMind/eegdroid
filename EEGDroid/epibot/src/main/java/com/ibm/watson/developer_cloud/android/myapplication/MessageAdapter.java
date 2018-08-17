@@ -10,17 +10,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.ImageView;
+
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+
 import android.text.Html;
 import android.os.Build;
-
 
 
 public class MessageAdapter extends ArrayAdapter<String[]> {
 
     private static final String TAG = "MessageAdapter";
-
     private Context mContext;
     int mResource;
 
@@ -29,7 +29,6 @@ public class MessageAdapter extends ArrayAdapter<String[]> {
         //this.mContext = mContext;
         mContext = context;
         mResource = resource;
-
     }
 
     @NonNull
@@ -39,10 +38,9 @@ public class MessageAdapter extends ArrayAdapter<String[]> {
 
         String user = getItem(position)[0];
         String type = getItem(position)[2];
-
         String msj = "";
         String ima = "https://image.ibb.co/jMVGYK/White_Pixels.png";
-
+        Bitmap image;
 
         if (type.equals("text")) {
             msj = getItem(position)[1];
@@ -53,13 +51,12 @@ public class MessageAdapter extends ArrayAdapter<String[]> {
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         convertView = inflater.inflate(mResource, parent, false);
-
         TextView tvUser = (TextView) convertView.findViewById(R.id.UserTextView);
         TextView tvMsj = (TextView) convertView.findViewById(R.id.MessageTextView);
         ImageView ivIma = (ImageView) convertView.findViewById(R.id.ImageView);
 
-        Bitmap image;
-        try { image = new DownloadImageTask(ivIma).execute(ima).get();
+        try {
+            image = new DownloadImageTask(ivIma).execute(ima).get();
         } catch (InterruptedException e) {
             image = null;
         } catch (ExecutionException e) {
@@ -67,19 +64,13 @@ public class MessageAdapter extends ArrayAdapter<String[]> {
         }
 
         ivIma.setImageBitmap(image);
-
-
         tvUser.setText(user);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             tvMsj.setText(Html.fromHtml(msj, Html.FROM_HTML_MODE_LEGACY));
         } else {
             tvMsj.setText(Html.fromHtml(msj));
         }
-
-
         return convertView;
-
     }
-
 
 }

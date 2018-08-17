@@ -47,15 +47,11 @@ import com.ibm.watson.developer_cloud.conversation.v1.model.MessageRequest;
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageResponse;
 import com.ibm.watson.developer_cloud.http.ServiceCallback;
 import com.ibm.watson.developer_cloud.conversation.v1.model.InputData;
-
-import static com.ibm.watson.developer_cloud.android.myapplication.R.id.imageButton; //This is wrong.
-
 import com.ibm.watson.developer_cloud.conversation.v1.model.Context;
 
 import android.os.Build;
 
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageOptions;
-import com.ibm.watson.developer_cloud.service.model.GenericModel;
 import com.ibm.watson.developer_cloud.conversation.v1.model.DialogRuntimeResponseGeneric;
 
 
@@ -101,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         msgView.setAdapter(msgList);
         input = (EditText) findViewById(R.id.input);
         mic = (ImageButton) findViewById(R.id.mic);
-        conv = (ImageButton) findViewById(imageButton);
+        conv = (ImageButton) findViewById(R.id.imageButton);
         MessageResponse response = null;
         conversationAPI(String.valueOf(input.getText()), context, inputWorkspaceId);
         messages = new ArrayList<String[]>();
@@ -284,7 +280,6 @@ public class MainActivity extends AppCompatActivity {
 
         InputData.Builder inputDataBuilder = new InputData.Builder(input);
         InputData inputData = inputDataBuilder.build();
-
         MessageRequest newMessage = new MessageRequest();
         newMessage.setInput(inputData);
         newMessage.setContext(context);
@@ -294,7 +289,6 @@ public class MainActivity extends AppCompatActivity {
             messages.add(user_input_null);
             msgView.setAdapter(adapter);
         }
-        ;
 
         MessageOptions messageOptions = new MessageOptions.Builder().workspaceId(workspaceId).messageRequest(newMessage).context(context).input(inputData).build();
 
@@ -360,7 +354,6 @@ public class MainActivity extends AppCompatActivity {
             });
 
         }
-
 
 
     }
