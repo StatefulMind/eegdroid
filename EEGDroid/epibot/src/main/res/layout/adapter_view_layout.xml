@@ -1,35 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="100" >
+    android:orientation="horizontal"
+    android:weightSum="100">
 
 
     <TextView
         android:id="@+id/UserTextView"
-        android:textAlignment="center"
-        android:text="User"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_weight="80"
-        android:textStyle="bold"
-        android:textSize="14sp"
+        android:drawableTop="@mipmap/ic_face_black_48dp"
+        android:text="User"
+        android:textAlignment="center"
         android:textColor="#000000"
-        android:drawableTop= "@mipmap/ic_face_black_48dp"
-        />
-
-    <TextView
-        android:id="@+id/MessageTextView"
-        android:gravity="left"
-        android:textAlignment="viewStart"
-        android:text="Message"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="20"
-        android:textStyle="italic"
         android:textSize="14sp"
-        />
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="20"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/MessageTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="left"
+            android:text="Message"
+            android:textSize="14sp"
+            android:textStyle="italic" />
+
+        <ImageView
+            android:id="@+id/ImageView"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -290,8 +290,8 @@ public class MainActivity extends AppCompatActivity {
         newMessage.setContext(context);
 
         if (input.trim().length() > 0) {
-            String[] user_and_input = {usersname, input};
-            messages.add(user_and_input);
+            String[] user_input_null = {usersname, input, "text"};
+            messages.add(user_input_null);
             msgView.setAdapter(adapter);
         }
         ;
@@ -319,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
         OutputData outputData = new OutputData();
         outputData = mssg.getOutput();
         DialogRuntimeResponseGeneric generic = outputData.getGeneric().get(0);
-        System.out.println(generic.getResponseType());
+
 
         if (generic.getResponseType().equals("text")) {
 
@@ -329,25 +329,14 @@ public class MainActivity extends AppCompatActivity {
 
             for (final String element : texts) {
 
-                int delay = 750 * (element.length() / 25);
-
-                try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-
-                if (Build.VERSION.SDK_INT >= 26) {
-                    ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
-                } else {
-                    ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(100);
-                }
+                delay(element, 750);
+                vibration(100);
 
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        String[] bot_and_input = {botsname, element};
-                        messages.add(bot_and_input);
+                        String[] user_msj_link = {botsname, element, "text"};
+                        messages.add(user_msj_link);
                         msgView.setAdapter(adapter);
                         context = mssg.getContext();
                     }
@@ -356,26 +345,15 @@ public class MainActivity extends AppCompatActivity {
 
         } else if (generic.getResponseType().equals("image")) {
 
-            final String link = "<img src="+ generic.getSource() + " style=\"width:128px;height:128px;\">";
-            System.out.println(link);
-
-            try {
-                Thread.sleep(750);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-
-            if (Build.VERSION.SDK_INT >= 26) {
-                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(100);
-            }
+            final String text = generic.getSource();
+            delay("abcdefghiklmnopqrstvwxyz", 750);
+            vibration(100);
 
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    String[] bot_and_input = {botsname, link};
-                    messages.add(bot_and_input);
+                    String[] user_msj_link = {botsname, text, "image"};
+                    messages.add(user_msj_link);
                     msgView.setAdapter(adapter);
                     context = mssg.getContext();
                 }
@@ -383,6 +361,29 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+
+
     }
+
+    public void delay(String text, int delayPerLine) {
+
+        int delay = delayPerLine * (text.length() / 25);
+
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+
+    }
+
+    public void vibration(int duration) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(duration);
+        }
+    }
+
 
 }
