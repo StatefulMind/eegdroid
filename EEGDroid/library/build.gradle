@@ -14,7 +14,6 @@ apply plugin: 'com.vanniktech.android.javadoc'
 
 android {
   compileSdkVersion 27
-  buildToolsVersion '28.0.2'
 
   defaultConfig {
     minSdkVersion 21
