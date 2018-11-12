@@ -83,26 +83,28 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-
-
+        if (id == R.id.record) {
 
             // Handle the camera action
-            Intent intent = new Intent(this, Record.class);
+            Intent intent = new Intent(this, Epibot.class);
             startActivity(intent);
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.display) {
             Intent intent = new Intent(this, Display.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.manage) {
             Intent intent = new Intent(this, Epibot.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.tfanalysis) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.epibot) {
+            Intent intent = new Intent(this, Epibot.class);
+            startActivity(intent);
+        } else if (id == R.id.user_details) {
 
-        } else if (id == R.id.nav_send) {
+        }
+        else if (id == R.id.settings) {
 
         }
 

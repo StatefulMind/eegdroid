@@ -5,23 +5,23 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
+            android:id="@+id/record"
             android:icon="@drawable/ic_voicemail_black_24dp"
             android:title="Record EEG" />
         <item
-            android:id="@+id/nav_gallery"
+            android:id="@+id/display"
             android:icon="@drawable/ic_video_library_black_24dp"
             android:title="Show recordings" />
         <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/manage"
             android:icon="@drawable/ic_save_black_24dp"
             android:title="Manage recordings" />
         <item
-            android:id="@+id/nav_manage"
+            android:id="@+id/tfanalysis"
             android:icon="@drawable/ic_gradient_black_24dp"
             android:title="Time-frequancy analysis" />
         <item
-            android:id="@+id/nav_manage"
+            android:id="@+id/epibot"
             android:icon="@drawable/ic_chat_black_24dp"
             android:title="Epibot" />
     </group>
@@ -29,11 +29,11 @@
     <item android:title="Settings">
         <menu>
             <item
-                android:id="@+id/nav_share"
+                android:id="@+id/user_details"
                 android:icon="@drawable/ic_person_black_24dp"
-                android:title="User detaills" />
+                android:title="User details" />
             <item
-                android:id="@+id/nav_send"
+                android:id="@+id/settings"
                 android:icon="@drawable/ic_menu_manage"
                 android:title="Settings" />
         </menu>

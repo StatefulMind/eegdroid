@@ -10,10 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.ImageView;
-
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-
 import android.text.Html;
 import android.os.Build;
 
