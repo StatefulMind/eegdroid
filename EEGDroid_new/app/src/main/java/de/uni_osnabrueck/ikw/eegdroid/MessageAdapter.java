@@ -49,9 +49,9 @@ public class MessageAdapter extends ArrayAdapter<String[]> {
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         convertView = inflater.inflate(mResource, parent, false);
-        TextView tvUser = (TextView) convertView.findViewById(R.id.UserTextView);
-        TextView tvMsj = (TextView) convertView.findViewById(R.id.MessageTextView);
-        ImageView ivIma = (ImageView) convertView.findViewById(R.id.ImageView);
+        TextView tvUser = (TextView) convertView.findViewById(R.id.AdapterUserTextView);
+        TextView tvMsj = (TextView) convertView.findViewById(R.id.AdapterMessageTextView);
+        ImageView ivIma = (ImageView) convertView.findViewById(R.id.AdapterImageView);
 
         try {
             image = new DownloadImageTask(ivIma).execute(ima).get();

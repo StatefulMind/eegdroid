@@ -2,6 +2,7 @@ package de.uni_osnabrueck.ikw.eegdroid;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;

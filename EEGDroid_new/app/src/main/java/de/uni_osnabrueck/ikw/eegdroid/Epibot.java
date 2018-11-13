@@ -79,7 +79,7 @@ public class Epibot extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_epibot);
         counter_interactions = 0;
         microphoneHelper = new MicrophoneHelper(this);
         speechToText = initSpeechToTextService();

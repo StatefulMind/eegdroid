@@ -7,7 +7,7 @@
 
 
     <TextView
-        android:id="@+id/UserTextView"
+        android:id="@+id/AdapterUserTextView"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_weight="80"
@@ -26,7 +26,7 @@
 
 
         <TextView
-            android:id="@+id/MessageTextView"
+            android:id="@+id/AdapterMessageTextView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="left"
@@ -35,7 +35,7 @@
             android:textStyle="italic" />
 
         <ImageView
-            android:id="@+id/ImageView"
+            android:id="@+id/AdapterImageView"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"/>
 
