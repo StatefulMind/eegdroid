@@ -36,7 +36,21 @@ dependencies {
     implementation project(':library_epibot')
     androidTestImplementation 'com.android.support.test:rules:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
-    androidTestImplementation ('com.android.support.test.espresso:espresso-core:3.0.2') {
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.2') {
         exclude group: 'com.android.support', module: 'support-annotations'
+    }
+    implementation 'org.bytedeco:javacpp:1.4.2'
+    implementation 'org.bytedeco.javacpp-presets:openblas:0.3.0-1.4.2:android-arm'
+    implementation 'org.bytedeco.javacpp-presets:openblas:0.3.0-1.4.2:android-x86'
+    compileOnly 'org.projectlombok:lombok:1.18.2'
+    annotationProcessor 'org.projectlombok:lombok:1.18.2'
+    implementation 'org.nd4j:nd4j-native:1.0.0-beta'
+    implementation 'org.nd4j:nd4j-native:1.0.0-beta:android-arm'
+    implementation 'org.nd4j:nd4j-native:1.0.0-beta:android-x86'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
+    implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    implementation 'com.google.code.findbugs:annotations:3.0.1', {
+        exclude module: 'jsr305'
+        exclude module: 'jcip-annotations'
     }
 }
