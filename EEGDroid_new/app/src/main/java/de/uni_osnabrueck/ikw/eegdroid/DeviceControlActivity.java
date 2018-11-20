@@ -346,8 +346,8 @@ public class DeviceControlActivity extends Activity {
 //        TextView tv = (TextView) findViewById(R.id.data_value);
 //        String eeg_data = new String((String) tv.getText());
 ////        Log.d(TAG, String.format("Values: " + eeg_data));
-        getActionBar().setTitle(mDeviceName);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        //getActionBar().setTitle(mDeviceName);
+        //getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 

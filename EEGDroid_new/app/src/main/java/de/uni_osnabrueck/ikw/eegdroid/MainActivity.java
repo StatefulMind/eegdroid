@@ -1,5 +1,6 @@
 package de.uni_osnabrueck.ikw.eegdroid;
 
+import android.bluetooth.BluetoothClass;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.Connect) {
-            Intent intent = new Intent(this, Connect.class);
+            Intent intent = new Intent(this, DeviceScanActivity.class);
             startActivity(intent);
         }
 
