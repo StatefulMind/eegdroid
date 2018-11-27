@@ -2,8 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/Connect"
+        android:id="@+id/scan"
         android:orderInCategory="100"
-        android:title="@string/Connect_main"
+        android:title="@string/menu_scan"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/disconnect"
+        android:orderInCategory="100"
+        android:title="@string/menu_disconnect"
         app:showAsAction="never" />
 </menu>
