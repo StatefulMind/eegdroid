@@ -94,52 +94,52 @@ public class MainActivity extends AppCompatActivity
 
 
     // Code to manage Service lifecycle.
-//    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-//
-//        @Override
-//        public void onServiceConnected(ComponentName componentName, IBinder service) {
-//            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
-//            if (!mBluetoothLeService.initialize()) {
-//                Log.e(TAG, "Unable to initialize Bluetooth");
-//                finish();
-//            }
-//            // Automatically connects to the device upon successful start-up initialization.
-//            mBluetoothLeService.connect(mDeviceAddress);
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName componentName) {
-//            mBluetoothLeService = null;
-//        }
-//    };
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e(TAG, "Unable to initialize Bluetooth");
+                finish();
+            }
+            // Automatically connects to the device upon successful start-up initialization.
+            mBluetoothLeService.connect(mDeviceAddress);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
 
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
     // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
     // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read or notification operations.
-//    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            final String action = intent.getAction();
-//            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-//                mConnected = true;
-//                updateConnectionState(R.string.connected);
-//                invalidateOptionsMenu();
-//            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-//                mConnected = false;
-//                updateConnectionState(R.string.disconnected);
-//                invalidateOptionsMenu();
-//                clearUI();
-//            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-//                // Show all the supported services and characteristics on the user interface.
-//                displayGattServices(mBluetoothLeService.getSupportedGattServices());
-//            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-//                connected = true;
-//
-//            }
-//        }
-//    };
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                mConnected = true;
+                updateConnectionState(R.string.connected);
+                invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mConnected = false;
+                updateConnectionState(R.string.disconnected);
+                //invalidateOptionsMenu();
+                //clearUI();
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+               //displayGattServices(mBluetoothLeService.getSupportedGattServices());
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                connected = true;
+
+            }
+        }
+    };
 
     // If a given GATT characteristic is selected, check for supported features.  This sample
     // demonstrates 'Read' and 'Notify' features.  See
@@ -204,34 +204,55 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-//        final Intent intent = getIntent(); //HERE WE RECEIVE THE INTENT
-//        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
-//        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
         // Sets up UI references.
 //        ((TextView) findViewById(R.id.device_address)).setText(mDeviceAddress);
 //        mGattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
 //        mGattServicesList.setOnChildClickListener(servicesListClickListner);
-//        mConnectionState = (TextView) findViewById(R.id.connection_state);
-//        mDataField = (TextView) findViewById(R.id.data_value);
-//        TextView tv = (TextView) findViewById(R.id.data_value);
+        mConnectionState = (TextView) findViewById(R.id.connection_state);
+        mDataField = (TextView) findViewById(R.id.data_value);
+        TextView tv = (TextView) findViewById(R.id.data_value);
 //        String eeg_data = new String((String) tv.getText());
 ////        Log.d(TAG, String.format("Values: " + eeg_data));
         //getActionBar().setTitle(mDeviceName);
         //getActionBar().setDisplayHomeAsUpEnabled(true);
-        //Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-        //bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
+
+    }
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        // Check which request we're responding to
+        if (requestCode == 1200) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                // The user picked a contact.
+                // The Intent's data Uri identifies which contact was selected.
+                mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+                mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+                mConnectionState.setText("Connecteddd");
+
+                Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+                bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+                mConnectionState.setText("Ready!");
+
+
+                // Do something with the contact here (bigger example below)
+            }
+        }
     }
 
 //    @Override
 //    protected void onResume() {
 //        super.onResume();
-//        //registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-//        //if (mBluetoothLeService != null) {
-//         //   final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-//         //   Log.d(TAG, "Connect request result=" + result);
-//        //}
+//        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+//        if (mBluetoothLeService != null) {
+//            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+//            Log.d(TAG, "Connect request result=" + result);
+//        }
 //    }
 //
 //    @Override
@@ -249,14 +270,14 @@ public class MainActivity extends AppCompatActivity
 
 
 
-//    private void updateConnectionState(final int resourceId) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                mConnectionState.setText(resourceId);
-//            }
-//        });
-//    }
+    private void updateConnectionState(final int resourceId) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mConnectionState.setText(resourceId);
+            }
+        });
+    }
 
     @Override
     public void onBackPressed() {
@@ -284,7 +305,8 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.scan) {
             Intent intent = new Intent(this, DeviceScanActivity.class);
-            startActivity(intent);
+            //startActivity(intent);
+            startActivityForResult(intent,1200);
         }
         if (id == R.id.disconnect) {
             mBluetoothLeService.disconnect();
@@ -315,6 +337,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.epibot) {
             Intent intent = new Intent(this, Epibot.class);
             startActivity(intent);
+
         } else if (id == R.id.user_details) {
 
         } else if (id == R.id.settings) {

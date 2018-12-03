@@ -200,14 +200,24 @@ public class DeviceScanActivity extends ListActivity {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
-        final Intent intent = new Intent(DeviceScanActivity.this, DeviceControlActivity.class);
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+
+
+//        final Intent intent = new Intent(DeviceScanActivity.this, DeviceControlActivity.class);
+//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
+//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+//        startActivity(intent);
+        Intent intent = new Intent();
+        intent.putExtra(MainActivity.EXTRAS_DEVICE_NAME, device.getName());
+        intent.putExtra(MainActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        setResult(RESULT_OK, intent);
+
+
         if (mScanning) {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
             mScanning = false;
         }
-        startActivity(intent);
+
+        finish();
     }
 
     private void scanLeDevice(final boolean enable) {
