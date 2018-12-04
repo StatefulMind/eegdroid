@@ -76,7 +76,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private final static String TAG = DeviceControlActivity.class.getSimpleName();
+    private final static String TAG = MainActivity.class.getSimpleName();
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private TextView mConnectionState;
@@ -90,7 +90,6 @@ public class MainActivity extends AppCompatActivity
     private BluetoothGattCharacteristic mNotifyCharacteristic;
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
-    private boolean connected = false;
 
 
     // Code to manage Service lifecycle.
@@ -125,17 +124,17 @@ public class MainActivity extends AppCompatActivity
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 updateConnectionState(R.string.connected);
-                invalidateOptionsMenu();
+
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 updateConnectionState(R.string.disconnected);
                 //invalidateOptionsMenu();
-                //clearUI();
+                clearUI();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
-               //displayGattServices(mBluetoothLeService.getSupportedGattServices());
+               displayGattServices(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                connected = true;
+                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 
             }
         }
@@ -145,34 +144,34 @@ public class MainActivity extends AppCompatActivity
     // demonstrates 'Read' and 'Notify' features.  See
     // http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for the complete
     // list of supported characteristic features.
-//    private final ExpandableListView.OnChildClickListener servicesListClickListner =
-//            new ExpandableListView.OnChildClickListener() {
-//                @Override
-//                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-//                    if (mGattCharacteristics != null) {
-//                        final BluetoothGattCharacteristic characteristic =
-//                                mGattCharacteristics.get(groupPosition).get(childPosition);
-//                        final int charaProp = characteristic.getProperties();
-//                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-//                            // If there is an active notification on a characteristic, clear
-//                            // it first so it doesn't update the data field on the user interface.
-//                            if (mNotifyCharacteristic != null) {
-//                                mBluetoothLeService.setCharacteristicNotification(
-//                                        mNotifyCharacteristic, false);
-//                                mNotifyCharacteristic = null;
-//                            }
-//                            mBluetoothLeService.readCharacteristic(characteristic);
-//                        }
-//                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-//                            mNotifyCharacteristic = characteristic;
-//                            mBluetoothLeService.setCharacteristicNotification(
-//                                    characteristic, true);
-//                        }
-//                        return true;
-//                    }
-//                    return false;
-//                }
-//            };
+    private final ExpandableListView.OnChildClickListener servicesListClickListner =
+            new ExpandableListView.OnChildClickListener() {
+                @Override
+                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                    if (mGattCharacteristics != null) {
+                        final BluetoothGattCharacteristic characteristic =
+                                mGattCharacteristics.get(groupPosition).get(childPosition);
+                        final int charaProp = characteristic.getProperties();
+                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                            // If there is an active notification on a characteristic, clear
+                            // it first so it doesn't update the data field on the user interface.
+                            if (mNotifyCharacteristic != null) {
+                                mBluetoothLeService.setCharacteristicNotification(
+                                        mNotifyCharacteristic, false);
+                                mNotifyCharacteristic = null;
+                            }
+                            mBluetoothLeService.readCharacteristic(characteristic);
+                        }
+                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                            mNotifyCharacteristic = characteristic;
+                            mBluetoothLeService.setCharacteristicNotification(
+                                    characteristic, true);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            };
 
     private void clearUI() {
         mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
@@ -206,14 +205,14 @@ public class MainActivity extends AppCompatActivity
 
 
         // Sets up UI references.
-//        ((TextView) findViewById(R.id.device_address)).setText(mDeviceAddress);
-//        mGattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
-//        mGattServicesList.setOnChildClickListener(servicesListClickListner);
+        ((TextView) findViewById(R.id.device_address)).setText(mDeviceAddress);
+        mGattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
+        mGattServicesList.setOnChildClickListener(servicesListClickListner);
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
         TextView tv = (TextView) findViewById(R.id.data_value);
-//        String eeg_data = new String((String) tv.getText());
-////        Log.d(TAG, String.format("Values: " + eeg_data));
+        String eeg_data = new String((String) tv.getText());
+            Log.d(TAG, String.format("Values: " + eeg_data));
         //getActionBar().setTitle(mDeviceName);
         //getActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -236,14 +235,17 @@ public class MainActivity extends AppCompatActivity
 
                 Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
                 bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-                mDataField.setText(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                //mBluetoothLeService.connect(mDeviceAddress);
+                //mDataField.setText(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 
 
 
                 // Do something with the contact here (bigger example below)
             }
         }
-    }
+  }
+
+
 
     @Override
     protected void onResume() {
@@ -265,6 +267,7 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         unbindService(mServiceConnection);
+        //mBluetoothLeService.disconnect();
         mBluetoothLeService = null;
     }
 
@@ -277,6 +280,14 @@ public class MainActivity extends AppCompatActivity
                 mConnectionState.setText(resourceId);
             }
         });
+    }
+
+    private void displayData(String data) {
+        if (data != null) {
+            // data format example: +01012 -00234 +01374 -01516 +01656 +01747 +00131 -00351
+            // raw data format example: +01012 -00234 +01374 -01516 +01656 +01747 +00131 -00351
+            mDataField.setText(data); // print the n-dimensional array after the data
+        }
     }
 
     @Override
@@ -310,6 +321,7 @@ public class MainActivity extends AppCompatActivity
         }
         if (id == R.id.disconnect) {
             mBluetoothLeService.disconnect();
+            mConnected = false;
         }
         return super.onOptionsItemSelected(item);
     }
