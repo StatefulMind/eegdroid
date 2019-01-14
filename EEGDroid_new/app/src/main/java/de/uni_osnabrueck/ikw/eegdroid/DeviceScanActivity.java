@@ -206,9 +206,9 @@ public class DeviceScanActivity extends ListActivity {
 //        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
 //        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
 //        startActivity(intent);
-        Intent intent = new Intent();
-        intent.putExtra(MainActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(MainActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        Intent intent = new Intent(DeviceScanActivity.this, Record.class);
+        intent.putExtra(Record.EXTRAS_DEVICE_NAME, device.getName());
+        intent.putExtra(Record.EXTRAS_DEVICE_ADDRESS, device.getAddress());
         setResult(RESULT_OK, intent);
 
 
