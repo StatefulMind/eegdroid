@@ -1,6 +1,5 @@
 package de.uni_osnabrueck.ikw.eegdroid;
 
-import android.bluetooth.BluetoothClass;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,16 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-
     private Intent placeholder;
-
-
-
+    private TextView mConnectionState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +28,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,13 +42,11 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
+        mConnectionState = (TextView) findViewById(R.id.connection_state_main);
+        mConnectionState.setText(R.string.no_device);
     }
-
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -61,26 +55,12 @@ public class MainActivity extends AppCompatActivity
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 // The user picked a contact.
-                // The Intent's data Uri identifies which contact was selected.
-
+                // The Intent's data Uri identifies which contact was selected
                 placeholder = intent;
-
-
-
-
-
-                // Do something with the contact here (bigger example below)
+                mConnectionState.setText(R.string.device_found);
             }
         }
   }
-
-
-
-
-
-
-
-
 
     @Override
     public void onBackPressed() {
@@ -108,7 +88,6 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.scan) {
             Intent intent = new Intent(this, DeviceScanActivity.class);
-            //startActivity(intent);
             startActivityForResult(intent,1200);
         }
         if (id == R.id.disconnect) {
@@ -130,23 +109,15 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.display) {
             Intent intent = new Intent(this, Display.class);
             startActivity(intent);
-
         } else if (id == R.id.manage) {
-            Intent intent = new Intent(this, Epibot.class);
-            startActivity(intent);
-
         } else if (id == R.id.tfanalysis) {
-
         } else if (id == R.id.epibot) {
             Intent intent = new Intent(this, Epibot.class);
             startActivity(intent);
-
         } else if (id == R.id.user_details) {
 
         } else if (id == R.id.settings) {
-
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -154,4 +125,3 @@ public class MainActivity extends AppCompatActivity
 
 
 }
-

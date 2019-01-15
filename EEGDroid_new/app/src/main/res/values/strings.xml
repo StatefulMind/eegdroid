@@ -82,7 +82,7 @@
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="label_data">Data:</string>
     <string name="label_device_address">Device address:</string>
-    <string name="label_state">State:</string>
+    <string name="label_state">Status:</string>
     <string name="no_data">No data</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
@@ -98,5 +98,20 @@
     <string name="menu_refresh">Refresh</string>
     <string name="title_activity_connect">Connect</string>
     <string name="Connect_main">Connect</string>
+    <string name="no_device">No device found</string>
+
+    <string name="device_found">Device founded</string>
+    <string name="device_connected">Connected to device</string>
+    <string name="start_record_button_description">Starts recording</string>
+    <string name="pause_record_button_description">Pauses recording</string>
+    <string name="save_record_button_description">Saves recording</string>
+    <string name="discard_record_button_description">Discards recording</string>
+    <string name="startRecord_clicked">Recording started</string>
+    <string name="startRecord_clicked_whileRecording">Recording in process</string>
+    <string name="pausedRecord_clicked">Recording paused</string>
+    <string name="saveRecord_clicked">Recording saved</string>
+    <string name="saveRecord_clicked_whileRecording">Please pause the recording first</string>
+    <string name="discardRecord_clicked">Recording discarted</string>
+
 
 </resources>
