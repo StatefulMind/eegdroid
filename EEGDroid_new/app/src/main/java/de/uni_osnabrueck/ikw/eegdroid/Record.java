@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +16,6 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.SimpleExpandableListAdapter;
@@ -23,6 +23,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -69,6 +77,10 @@ public class Record extends AppCompatActivity {
     private long start_watch;
     private String recording_time;
     private String session_label;
+    private LineChart mChart;
+    private ArrayList<Entry> lineEntries;
+    private int count;
+    private int cnt;
 
 
     // Code to manage Service lifecycle.
@@ -111,7 +123,7 @@ public class Record extends AppCompatActivity {
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 displayGattServices(mBluetoothLeService.getSupportedGattServices());
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) { ;
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 if (recording) {
                     storeData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
@@ -180,6 +192,7 @@ public class Record extends AppCompatActivity {
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
+        /// Buttons to record EEG data ///
         start_record_button = (ImageButton) findViewById(R.id.start_record_button);
         pause_record_button = (ImageButton) findViewById(R.id.pause_record_button);
         save_record_button = (ImageButton) findViewById(R.id.save_record_button);
@@ -189,7 +202,32 @@ public class Record extends AppCompatActivity {
         pause_record_button.setOnClickListener(pauseRecord_OnClickListener);
         save_record_button.setOnClickListener(saveRecord_OnClickListener);
         discard_record_button.setOnClickListener(discardRecord_OnClickListener);
+
+        /// Plotting of EEG data ///
+        lineEntries = new ArrayList<Entry>();
+        count = 0;
+        OnChartValueSelectedListener OnChartListener = new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry entry, Highlight h) {
+                //entry.getData() returns null here
+            }
+
+            @Override
+            public void onNothingSelected() {
+            }
+        };
+
+        LineData data = new LineData();
+        data.setValueTextColor(Color.WHITE);
+        mChart = (LineChart) findViewById(R.id.chart1);
+        mChart.setOnChartValueSelectedListener(OnChartListener);
+        mChart.setData(data);
+
+        cnt = 0;
+
+
     }
+
 
     @Override
     protected void onResume() {
@@ -217,13 +255,21 @@ public class Record extends AppCompatActivity {
     }
 
 
-
     private void displayData(String data) {
+        cnt += 1;
+        // Conversion formula: V_in = X*1.65V/(1000 * GAIN * 2048)
+        // Assuming GAIN = 64
+        if (cnt % 10 == 0) {
+            final float numerator = 1650000;
+            final float denominator = 1000 * 64 * 2048;
+            final String[] parts = data.split(" ");
+            final List<Float> data_raw = new ArrayList<>();
+
+            addEntry((Float.parseFloat(parts[0]) * numerator) / denominator);
+        }
         if (data != null) {
             // data format example: +01012 -00234 +01374 -01516 +01656 +01747 +00131 -00351
-            // raw data format example: +01012 -00234 +01374 -01516 +01656 +01747 +00131 -00351
             mDataField.setText(data); // print the n-dimensional array after the data
-        } else {
         }
     }
 
@@ -338,7 +384,6 @@ public class Record extends AppCompatActivity {
             recording_time = Long.toString(stop_watch - start_watch);
             Toast.makeText(this, R.string.pausedRecord_clicked, Toast.LENGTH_LONG).show();
             mConnectionState.setText(R.string.pausedRecord_clicked);
-            mConnectionState.setText(R.string.pausedRecord_clicked);
         }
     }
 
@@ -350,7 +395,7 @@ public class Record extends AppCompatActivity {
         }
     };
 
-    private void saveRecord_clicked(){
+    private void saveRecord_clicked() {
         if (recording) {
             Toast.makeText(this, R.string.saveRecord_clicked_whileRecording, Toast.LENGTH_LONG).show();
         } else {
@@ -374,11 +419,10 @@ public class Record extends AppCompatActivity {
         }
     };
 
-    private void discardRecord_clicked(){
+    private void discardRecord_clicked() {
         Toast.makeText(this, R.string.discardRecord_clicked, Toast.LENGTH_LONG).show();
         mConnectionState.setText(R.string.device_connected);
     }
-
 
 
     private void askForLabel() {
@@ -481,4 +525,39 @@ public class Record extends AppCompatActivity {
             Log.e(TAG, String.format("Error storing the data into a CSV file: " + e));
         }
     }
+
+
+    public void addEntry(float f) {
+        lineEntries.add(new Entry(count, f));
+        count = count + 1;
+        LineDataSet set1 = createSet(lineEntries);
+        //new LineDataSet(lineEntries,"legend");
+        LineData data1 = new LineData(set1);
+        data1.notifyDataChanged();
+        mChart.setData(data1);
+        mChart.notifyDataSetChanged();
+        // limit the number of visible entries
+        mChart.setVisibleXRangeMaximum(20);
+        // move to the latest entry
+        mChart.moveViewToX(data1.getEntryCount());
+
+    }
+
+    private LineDataSet createSet(ArrayList<Entry> le) {
+
+        LineDataSet set1 = new LineDataSet(le, "S1");
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set1.setColor(Color.rgb(255, 165, 0));  // Orange color
+        set1.setCircleColor(Color.WHITE);
+        set1.setLineWidth(1f);
+        set1.setCircleRadius(1f);
+        set1.setFillAlpha(65);
+        set1.setFillColor(ColorTemplate.getHoloBlue());
+        //set1.setHighLightColor(Color.rgb(244, 117, 117));
+        set1.setValueTextColor(Color.WHITE);
+        //set1.setValueTextSize(0.1f);
+        //set1.setDrawValues(false);
+        return set1;
+    }
+
 }

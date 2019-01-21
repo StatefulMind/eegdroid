@@ -112,6 +112,7 @@
     <string name="saveRecord_clicked">Recording saved</string>
     <string name="saveRecord_clicked_whileRecording">Please pause the recording first</string>
     <string name="discardRecord_clicked">Recording discarted</string>
+    <string name="streaming_data">Streaming data</string>
 
 
 </resources>
