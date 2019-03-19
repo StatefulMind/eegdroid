@@ -114,5 +114,44 @@
     <string name="discardRecord_clicked">Recording discarted</string>
     <string name="streaming_data">Streaming data</string>
 
+    <string name="label_resolution">Resolution:</string>
+
+    <string name="micro_volts">µV</string>
+    <string name="ch1">1</string>
+    <string name="ch2">2</string>
+    <string name="ch3">3</string>
+    <string name="ch4">4</string>
+    <string name="ch5">5</string>
+    <string name="ch6">6</string>
+    <string name="ch7">7</string>
+    <string name="ch8">8</string>
+    <string-array name="gains">
+        <item>0.5</item>
+        <item>1</item>
+        <item>2</item>
+        <item>4</item>
+        <item>8</item>
+        <item>16</item>
+        <item>32</item>
+        <item>64</item>
+    </string-array>
+    <string name="label_gain">Gain:</string>
+
+    <string name="no_address">No address</string>
+    <string name="ch1_label">ch1</string>
+    <string name="ch2_label">ch2</string>
+    <string name="ch3_label">ch3</string>
+    <string name="ch4_label">ch4</string>
+    <string name="ch5_label">ch5</string>
+    <string name="ch7_label">ch7</string>
+    <string name="ch8_label">ch8</string>
+    <string name="real_time_plot_label">Real-time plot</string>
+    <string name="record_label">Record</string>
+    <string name="save_label">Saving EEG session&#8230;</string>
+    <string name="ch6_label">ch6</string>
+    <string name="YAxis_label">µV</string>
+    <string name="XAxis_label">Time (s)</string>
+    <string name="traumschreiber_filter_title">Only showing Traumschreiber devices here:</string>
+
 
 </resources>
