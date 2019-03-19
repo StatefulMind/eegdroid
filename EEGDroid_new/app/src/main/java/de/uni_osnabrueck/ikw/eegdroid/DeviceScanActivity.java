@@ -4,7 +4,6 @@ package de.uni_osnabrueck.ikw.eegdroid;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -22,8 +21,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import java.util.ArrayList;
 
