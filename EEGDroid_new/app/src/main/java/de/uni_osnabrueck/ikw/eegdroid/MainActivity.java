@@ -111,6 +111,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
         } else if (id == R.id.manage) {
         } else if (id == R.id.tfanalysis) {
+            Intent intent = new Intent(this, TFAnalysis.class);
+            startActivity(intent);
         } else if (id == R.id.epibot) {
             Intent intent = new Intent(this, Epibot.class);
             startActivity(intent);

@@ -64,5 +64,8 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.8.1'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+
+    implementation 'org.bytedeco.javacpp-presets:fftw-platform:3.3.8-1.4.2'
+    implementation 'com.opencsv:opencsv:4.2'
 }
 
