@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+
+import android.os.Environment;
 import android.view.View;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
@@ -14,6 +16,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import java.io.File;
 
 
 public class MainActivity extends AppCompatActivity
@@ -21,6 +24,9 @@ public class MainActivity extends AppCompatActivity
 
     private Intent placeholder;
     private TextView mConnectionState;
+    private static File dirSessions;
+    private ManageRecords ManageRecords = new ManageRecords();
+    private String nameDir = "/sessions_EEG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +34,12 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // File object to save the directory to save the EEG recordings
+        dirSessions = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + nameDir);
+        ManageRecords.createDirectory(dirSessions);
+
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,6 +122,8 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, Display.class);
             startActivity(intent);
         } else if (id == R.id.manage) {
+            Intent intent = new Intent(this, ManageRecords.class);
+            startActivity(intent);
         } else if (id == R.id.tfanalysis) {
             Intent intent = new Intent(this, TFAnalysis.class);
             startActivity(intent);
@@ -124,6 +138,11 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    public static File getDirSessions(){
+        return dirSessions;
+    }
+
 
 
 }

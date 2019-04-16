@@ -944,8 +944,7 @@ public class Record extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    File formatted = new File(Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS),
+                    File formatted = new File(MainActivity.getDirSessions(),
                             date + "_" + tag + ".csv");
                     // if file doesn't exists, then create it
                     if (!formatted.exists()) //noinspection ResultOfMethodCallIgnored
