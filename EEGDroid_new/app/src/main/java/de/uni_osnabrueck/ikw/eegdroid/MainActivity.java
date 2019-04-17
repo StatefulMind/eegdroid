@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity
     private Intent placeholder;
     private TextView mConnectionState;
     private static File dirSessions;
-    private ManageRecords ManageRecords = new ManageRecords();
+    private ManageSessions ManageSessions = new ManageSessions();
     private String nameDir = "/sessions_EEG";
 
     @Override
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity
 
         // File object to save the directory to save the EEG recordings
         dirSessions = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + nameDir);
-        ManageRecords.createDirectory(dirSessions);
+        ManageSessions.createDirectory(dirSessions);
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, Display.class);
             startActivity(intent);
         } else if (id == R.id.manage) {
-            Intent intent = new Intent(this, ManageRecords.class);
+            Intent intent = new Intent(this, ManageSessions.class);
             startActivity(intent);
         } else if (id == R.id.tfanalysis) {
             Intent intent = new Intent(this, TFAnalysis.class);
