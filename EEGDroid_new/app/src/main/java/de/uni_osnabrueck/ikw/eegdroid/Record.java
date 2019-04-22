@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -124,7 +125,9 @@ public class Record extends AppCompatActivity {
     private Spinner gain_spinner;
     private int ACCUM_PLOT = 30;
     private LineChart mChart;
-    private Button btn_record;
+    private ImageButton imageButtonRecord;
+    private ImageButton imageButtonSave;
+    private ImageButton imageButtonDiscard;
     private Switch switch_plots;
     private View layout_plots;
     private boolean plotting = false;
@@ -174,6 +177,24 @@ public class Record extends AppCompatActivity {
         }
     };
 
+    private final View.OnClickListener imageRecordOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (!recording) askForLabel();
+            else endTrial();
+        }
+    };
+    private final View.OnClickListener imageSaveOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+        }
+    };
+    private final View.OnClickListener imageDiscardOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+        }
+    };
+
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
@@ -191,7 +212,7 @@ public class Record extends AppCompatActivity {
                 mConnected = false;
                 mConnectionState.setText(R.string.device_connected);
                 switch_plots.setEnabled(false);
-                btn_record.setEnabled(false);
+                imageButtonSave.setEnabled(false);
                 gain_spinner.setEnabled(false);
                 clearUI();
                 disableCheckboxes();
@@ -207,7 +228,7 @@ public class Record extends AppCompatActivity {
                 data_cnt++;
                 long last_data = System.currentTimeMillis();
                 switch_plots.setEnabled(true);
-                btn_record.setEnabled(true);
+                imageButtonRecord.setEnabled(true);
                 gain_spinner.setEnabled(true);
                 enableCheckboxes();
                 List<Float> microV = transData(intent.getIntArrayExtra(BluetoothLeService.EXTRA_DATA));
@@ -245,7 +266,9 @@ public class Record extends AppCompatActivity {
         ch6_color = ContextCompat.getColor(getApplicationContext(), R.color.red);
         ch7_color = ContextCompat.getColor(getApplicationContext(), R.color.yellow);
         ch8_color = ContextCompat.getColor(getApplicationContext(), R.color.black);
-        btn_record = findViewById(R.id.btn_record);
+        imageButtonSave = findViewById(R.id.imageButtonSave);
+        imageButtonRecord = findViewById(R.id.imageButtonRecord);
+        imageButtonDiscard = findViewById(R.id.imageButtonDiscard);
         switch_plots = findViewById(R.id.switch_plots);
         gain_spinner = findViewById(R.id.gain_spinner);
         gain_spinner.setSelection(1);
@@ -310,7 +333,9 @@ public class Record extends AppCompatActivity {
         layout_plots.setVisibility(ViewStub.GONE);
         mXAxis = findViewById(R.id.XAxis_title);
         mXAxis.setVisibility(ViewStub.GONE);
-        btn_record.setOnClickListener(btnRecordOnClickListener);
+        imageButtonRecord.setOnClickListener(imageRecordOnClickListener);
+        imageButtonSave.setOnClickListener(imageSaveOnClickListener);
+        imageButtonDiscard.setOnClickListener(imageDiscardOnClickListener);
         switch_plots.setOnCheckedChangeListener(switchPlotsOnCheckedChangeListener);
 
         // Sets up UI references.
@@ -895,7 +920,7 @@ public class Record extends AppCompatActivity {
         start_time = new SimpleDateFormat("HH:mm:ss.SSS").format(new Date());
         start_timestamp = new Timestamp(start_watch).getTime();
         recording = true;
-        btn_record.setText("Stop and Store Data");
+        imageButtonRecord.setImageResource(R.drawable.ic_stop_black_24dp);
     }
 
     //Finish a recording session
@@ -906,7 +931,6 @@ public class Record extends AppCompatActivity {
         long stop_watch = System.currentTimeMillis();
         end_timestamp = new Timestamp(stop_watch).getTime();
         recording_time = Long.toString(stop_watch - start_watch);
-        btn_record.setText(R.string.save_label);
         if (session_label == null) saveSession();
         else saveSession(session_label);
         session_label = null;
@@ -915,7 +939,7 @@ public class Record extends AppCompatActivity {
                 "Your EEG session was successfully stored",
                 Toast.LENGTH_LONG
         ).show();
-        btn_record.setText(R.string.record_label);
+        imageButtonRecord.setImageResource(R.drawable.ic_fiber_manual_record_red_24dp);
     }
 
     //Stores data while session is running
