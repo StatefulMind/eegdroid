@@ -169,29 +169,51 @@ public class Record extends AppCompatActivity {
         }
     };
 
-    private final View.OnClickListener btnRecordOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (!recording) askForLabel();
-            else endTrial();
-        }
-    };
 
     private final View.OnClickListener imageRecordOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (!recording) askForLabel();
-            else endTrial();
+            if (!recording) {
+                startTrial();
+                Toast.makeText(
+                        getApplicationContext(),
+                        "Recording in process.",
+                        Toast.LENGTH_LONG
+                ).show();
+                buttons_recording();
+            } else {
+                endTrial();
+                buttons_postrecording();
+            }
         }
     };
+
     private final View.OnClickListener imageSaveOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            askForLabel();
+            if (session_label == null) saveSession();
+            else saveSession(session_label);
+            session_label = null;
+            Toast.makeText(
+                getApplicationContext(),
+                "Your EEG session was successfully stored.",
+                Toast.LENGTH_LONG
+            ).show();
+            buttons_prerecording();
+
         }
     };
     private final View.OnClickListener imageDiscardOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            main_data = new ArrayList<>();
+            Toast.makeText(
+                    getApplicationContext(),
+                    "Your EEG session was discarded.",
+                    Toast.LENGTH_LONG
+            ).show();
+            buttons_prerecording();
         }
     };
 
@@ -212,7 +234,6 @@ public class Record extends AppCompatActivity {
                 mConnected = false;
                 mConnectionState.setText(R.string.device_connected);
                 switch_plots.setEnabled(false);
-                imageButtonSave.setEnabled(false);
                 gain_spinner.setEnabled(false);
                 clearUI();
                 disableCheckboxes();
@@ -228,7 +249,7 @@ public class Record extends AppCompatActivity {
                 data_cnt++;
                 long last_data = System.currentTimeMillis();
                 switch_plots.setEnabled(true);
-                imageButtonRecord.setEnabled(true);
+                //imageButtonRecord.setEnabled(true);
                 gain_spinner.setEnabled(true);
                 enableCheckboxes();
                 List<Float> microV = transData(intent.getIntArrayExtra(BluetoothLeService.EXTRA_DATA));
@@ -266,8 +287,8 @@ public class Record extends AppCompatActivity {
         ch6_color = ContextCompat.getColor(getApplicationContext(), R.color.red);
         ch7_color = ContextCompat.getColor(getApplicationContext(), R.color.yellow);
         ch8_color = ContextCompat.getColor(getApplicationContext(), R.color.black);
-        imageButtonSave = findViewById(R.id.imageButtonSave);
         imageButtonRecord = findViewById(R.id.imageButtonRecord);
+        imageButtonSave = findViewById(R.id.imageButtonSave);
         imageButtonDiscard = findViewById(R.id.imageButtonDiscard);
         switch_plots = findViewById(R.id.switch_plots);
         gain_spinner = findViewById(R.id.gain_spinner);
@@ -337,6 +358,7 @@ public class Record extends AppCompatActivity {
         imageButtonSave.setOnClickListener(imageSaveOnClickListener);
         imageButtonDiscard.setOnClickListener(imageDiscardOnClickListener);
         switch_plots.setOnCheckedChangeListener(switchPlotsOnCheckedChangeListener);
+        buttons_prerecording();
 
         // Sets up UI references.
         mConnectionState = (TextView) findViewById(R.id.connection_state);
@@ -592,12 +614,12 @@ public class Record extends AppCompatActivity {
                             @Override
                             public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                 session_label = input.toString();
-                                // Use a new tread as this can take a while
-                                // onResume we start our timer so it can start when the app comes from the background
-                                startTrial();
                             }
                         }).show();
     }
+
+
+
 
     private void readGattCharacteristic(List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
@@ -920,7 +942,6 @@ public class Record extends AppCompatActivity {
         start_time = new SimpleDateFormat("HH:mm:ss.SSS").format(new Date());
         start_timestamp = new Timestamp(start_watch).getTime();
         recording = true;
-        imageButtonRecord.setImageResource(R.drawable.ic_stop_black_24dp);
     }
 
     //Finish a recording session
@@ -931,16 +952,8 @@ public class Record extends AppCompatActivity {
         long stop_watch = System.currentTimeMillis();
         end_timestamp = new Timestamp(stop_watch).getTime();
         recording_time = Long.toString(stop_watch - start_watch);
-        if (session_label == null) saveSession();
-        else saveSession(session_label);
-        session_label = null;
-        Toast.makeText(
-                getApplicationContext(),
-                "Your EEG session was successfully stored",
-                Toast.LENGTH_LONG
-        ).show();
-        imageButtonRecord.setImageResource(R.drawable.ic_fiber_manual_record_red_24dp);
     }
+
 
     //Stores data while session is running
     private void storeData(List<Float> data_microV) {
@@ -1025,6 +1038,33 @@ public class Record extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    private void buttons_prerecording(){
+        imageButtonRecord.setImageResource(R.drawable.ic_fiber_manual_record_red_24dp);
+        imageButtonRecord.setEnabled(true);
+        imageButtonSave.setImageResource(R.drawable.ic_save_gray_24dp);
+        imageButtonSave.setEnabled(false);
+        imageButtonDiscard.setImageResource(R.drawable.ic_delete_gray_24dp);
+        imageButtonDiscard.setEnabled(false);
+    }
+
+    private void buttons_recording() {
+        imageButtonRecord.setImageResource(R.drawable.ic_stop_black_24dp);
+        imageButtonSave.setImageResource(R.drawable.ic_save_gray_24dp);
+        imageButtonSave.setEnabled(false);
+        imageButtonDiscard.setImageResource(R.drawable.ic_delete_gray_24dp);
+        imageButtonDiscard.setEnabled(false);
+    }
+
+    private void buttons_postrecording() {
+        imageButtonRecord.setImageResource(R.drawable.ic_fiber_manual_record_pink_24dp);
+        imageButtonRecord.setEnabled(true);
+        imageButtonSave.setEnabled(true);
+        imageButtonSave.setImageResource(R.drawable.ic_save_black_24dp);
+        imageButtonDiscard.setEnabled(true);
+        imageButtonDiscard.setImageResource(R.drawable.ic_delete_black_24dp);
+
     }
 
 }

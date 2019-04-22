@@ -1,6 +1,7 @@
 package de.uni_osnabrueck.ikw.eegdroid;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -9,6 +10,8 @@ import com.google.android.material.snackbar.Snackbar;
 import android.os.Environment;
 import android.view.View;
 import com.google.android.material.navigation.NavigationView;
+
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -55,6 +58,10 @@ public class MainActivity extends AppCompatActivity
         mConnectionState = (TextView) findViewById(R.id.connection_state_main);
         mConnectionState.setText(R.string.no_device);
         deviceConnected = false;
+
+        //Change the button of the menu
+        Drawable drawable = ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bluetooth_white_24dp);
+        toolbar.setOverflowIcon(drawable);
     }
 
     @Override
