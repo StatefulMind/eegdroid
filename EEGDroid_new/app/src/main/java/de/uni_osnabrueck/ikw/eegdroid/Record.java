@@ -887,6 +887,7 @@ public class Record extends AppCompatActivity {
         }
     }
 
+    //Starts a recording session
     @SuppressLint({"SimpleDateFormat", "SetTextI18n"})
     private void startTrial() {
         cnt = 0;
@@ -897,6 +898,7 @@ public class Record extends AppCompatActivity {
         btn_record.setText("Stop and Store Data");
     }
 
+    //Finish a recording session
     @SuppressLint("SimpleDateFormat")
     private void endTrial() {
         recording = false;
@@ -916,6 +918,7 @@ public class Record extends AppCompatActivity {
         btn_record.setText(R.string.record_label);
     }
 
+    //Stores data while session is running
     private void storeData(List<Float> data_microV) {
         if (dp_received.size() == 0) start_watch = System.currentTimeMillis();
         float[] f_microV = new float[data_microV.size()];
@@ -931,6 +934,7 @@ public class Record extends AppCompatActivity {
         saveSession("default");
     }
 
+    //Saves the data at the end of session
     private void saveSession(final String tag) {
         final String top_header = "Session ID,Session Tag,Date,Shape (rows x columns)," +
                 "Duration (ms),Starting Time,Ending Time,Resolution (ms),Resolution (Hz)," +

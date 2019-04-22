@@ -1,6 +1,7 @@
 package de.uni_osnabrueck.ikw.eegdroid;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -16,6 +17,8 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.io.File;
 
 
@@ -24,9 +27,11 @@ public class MainActivity extends AppCompatActivity
 
     private Intent placeholder;
     private TextView mConnectionState;
+    private boolean deviceConnected;
     private static File dirSessions;
     private ManageSessions ManageSessions = new ManageSessions();
     private String nameDir = "/sessions_EEG";
+    private Uri dirUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,16 +43,7 @@ public class MainActivity extends AppCompatActivity
         // File object to save the directory to save the EEG recordings
         dirSessions = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + nameDir);
         ManageSessions.createDirectory(dirSessions);
-
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        dirUri = Uri.parse(Environment.getExternalStorageDirectory() + "/sessions_EEG/"); //Uri to open the folder with sessions
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -58,6 +54,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         mConnectionState = (TextView) findViewById(R.id.connection_state_main);
         mConnectionState.setText(R.string.no_device);
+        deviceConnected = false;
     }
 
     @Override
@@ -70,6 +67,7 @@ public class MainActivity extends AppCompatActivity
                 // The Intent's data Uri identifies which contact was selected
                 placeholder = intent;
                 mConnectionState.setText(R.string.device_found);
+                deviceConnected = true;
             }
         }
   }
@@ -116,20 +114,39 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.record) {
-            //Intent intent = new Intent(this, Record.class);
-            startActivity(placeholder);
+            if (deviceConnected == true){
+                //Intent intent = new Intent(this, Record.class);
+                startActivity(placeholder);
+            } else {
+                Toast.makeText(this, "Please connect a device first.", Toast.LENGTH_LONG).show();
+            }
+
         } else if (id == R.id.display) {
             Intent intent = new Intent(this, Display.class);
             startActivity(intent);
+
         } else if (id == R.id.manage) {
-            Intent intent = new Intent(this, ManageSessions.class);
-            startActivity(intent);
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(dirUri, "resource/folder");
+            if (intent.resolveActivityInfo(getPackageManager(), 0) != null) {
+                startActivity(intent);
+            } else {
+                intent = getPackageManager().getLaunchIntentForPackage("com.google.android.apps.nbu.files"); //We overwrite here the last intent
+                intent.setAction("ACTION_VIEW");
+                intent.setDataAndType(dirUri, "resource/folder");
+                Intent intent1 = Intent.createChooser(intent, "Open With");
+                startActivity(intent1);
+            }
+
         } else if (id == R.id.tfanalysis) {
             Intent intent = new Intent(this, TFAnalysis.class);
             startActivity(intent);
+
         } else if (id == R.id.epibot) {
             Intent intent = new Intent(this, Epibot.class);
             startActivity(intent);
+
         } else if (id == R.id.user_details) {
 
         } else if (id == R.id.settings) {
