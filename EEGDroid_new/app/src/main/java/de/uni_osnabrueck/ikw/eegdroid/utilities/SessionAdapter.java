@@ -18,6 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 import de.uni_osnabrueck.ikw.eegdroid.R;
@@ -48,17 +50,14 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
         }catch(IOException ex) {
             attrs = null;
         }
+
         holder.name.setText(fileList[position].getName());
         float kbs = attrs.size()/1000;
         holder.kbs.setText(Float.toString(kbs));
 
-        FileTime creationTime = attrs.creationTime();
-        creationTime.toInstant();
-
-        String stringCreation = creationTime.toString();
-
-        holder.date.setText(stringCreation.substring(0,10));
-        holder.hour.setText(stringCreation.substring(11,19));
+        ZonedDateTime creationTime = attrs.creationTime().toInstant().atZone(ZoneId.systemDefault());
+        holder.date.setText(creationTime.toLocalDate().toString());
+        holder.hour.setText(creationTime.toLocalTime().toString());
     }
 
     @Override
