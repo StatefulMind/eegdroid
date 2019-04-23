@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity
             }
 
         } else if (id == R.id.display) {
-            Intent intent = new Intent(this, Display.class);
+            Intent intent = new Intent(this, ManageSessions.class);
             startActivity(intent);
 
         } else if (id == R.id.manage) {

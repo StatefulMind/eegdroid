@@ -67,4 +67,5 @@ dependencies {
 
     implementation 'org.bytedeco.javacpp-presets:fftw-platform:3.3.8-1.4.2'
     implementation 'com.opencsv:opencsv:4.2'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
 }
