@@ -1,6 +1,7 @@
 package de.uni_osnabrueck.ikw.eegdroid;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,9 +20,9 @@ public class ManageSessions extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
     private RecyclerView.LayoutManager layoutManager;
-    private ArrayList<String> planetList = new ArrayList();
     private String dirSessions;
     private File[] listOfFiles;
+    private DividerItemDecoration mDividerItemDecoration;
 
 
     @Override
@@ -30,15 +31,15 @@ public class ManageSessions extends AppCompatActivity {
         setContentView(R.layout.activity_manage_sessions);
         readDirectory(MainActivity.getDirSessions());
 
-        planetList.add("Mercury");
-        planetList.add("Venus");
-
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new SessionAdapter(planetList, getApplicationContext());
+        adapter = new SessionAdapter(listOfFiles, getApplicationContext());
         recyclerView.setAdapter(adapter);
+
+        mDividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), 1);
+        recyclerView.addItemDecoration(mDividerItemDecoration);
 
         // Receive the directory of the EEG Sessions
         Intent intent = getIntent();
