@@ -4,7 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -17,7 +20,9 @@ public class ManageSessions extends AppCompatActivity {
     private RecyclerView.Adapter adapter;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<String> planetList = new ArrayList();
+    private String dirSessions;
     private File[] listOfFiles;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +40,10 @@ public class ManageSessions extends AppCompatActivity {
         adapter = new SessionAdapter(planetList, getApplicationContext());
         recyclerView.setAdapter(adapter);
 
-
+        // Receive the directory of the EEG Sessions
+        Intent intent = getIntent();
+        dirSessions = intent.getExtras().getString("dirString");
+        listOfFiles = new File(dirSessions).listFiles();
     }
 
     public void createDirectory(File dir){
