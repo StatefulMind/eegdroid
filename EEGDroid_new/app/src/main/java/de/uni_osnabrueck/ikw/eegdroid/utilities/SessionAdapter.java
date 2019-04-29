@@ -1,6 +1,8 @@
 package de.uni_osnabrueck.ikw.eegdroid.utilities;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +26,12 @@ import java.util.ArrayList;
 
 import de.uni_osnabrueck.ikw.eegdroid.R;
 
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetViewHolder> {
 
     File[] fileList;
+    private int selectedPosition = -1;
 
     public SessionAdapter(File[] fileList, Context context) {
         this.fileList = fileList;
@@ -40,25 +45,42 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
     }
 
     @Override
-    public void onBindViewHolder(SessionAdapter.PlanetViewHolder holder, int position) {
+    public void onBindViewHolder(SessionAdapter.PlanetViewHolder holder, final int position) {
 
         BasicFileAttributes attrs;
         Path path = fileList[position].toPath();
 
         try {
             attrs = Files.readAttributes(path, BasicFileAttributes.class);
-        }catch(IOException ex) {
+        } catch (IOException ex) {
             attrs = null;
         }
 
         holder.name.setText(fileList[position].getName());
-        float kbs = attrs.size()/1000;
+        float kbs = attrs.size() / 1000;
         holder.kbs.setText(Float.toString(kbs));
 
         ZonedDateTime creationTime = attrs.creationTime().toInstant().atZone(ZoneId.systemDefault());
         holder.date.setText(creationTime.toLocalDate().toString());
         holder.hour.setText(creationTime.toLocalTime().toString());
+
+        if(selectedPosition==position)
+            holder.itemView.setBackgroundColor(Color.LTGRAY);
+        else
+            holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedPosition = position;
+                notifyDataSetChanged();
+
+                Log.d("wololo", fileList[selectedPosition].getPath());
+
+            }
+        });
     }
+
 
     @Override
     public int getItemCount() {

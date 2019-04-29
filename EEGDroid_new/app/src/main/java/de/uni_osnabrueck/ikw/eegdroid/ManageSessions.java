@@ -8,6 +8,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,6 +29,9 @@ public class ManageSessions extends AppCompatActivity {
     private String dirSessions;
     private File[] listOfFiles;
     private DividerItemDecoration mDividerItemDecoration;
+    private Boolean manageMode = false;
+    private View.OnClickListener onClickListener;
+
 
 
     @Override
@@ -38,6 +47,7 @@ public class ManageSessions extends AppCompatActivity {
         adapter = new SessionAdapter(listOfFiles, getApplicationContext());
         recyclerView.setAdapter(adapter);
 
+        // Add line between items of RecyclerView
         mDividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), 1);
         recyclerView.addItemDecoration(mDividerItemDecoration);
 
@@ -45,6 +55,32 @@ public class ManageSessions extends AppCompatActivity {
         Intent intent = getIntent();
         dirSessions = intent.getExtras().getString("dirString");
         listOfFiles = new File(dirSessions).listFiles();
+    }
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_manage, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.send_session:
+//                newGame();
+                return true;
+            case R.id.rename_session:
+//                showHelp();
+                return true;
+            case R.id.delete_session:
+//                showHelp();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public void createDirectory(File dir){

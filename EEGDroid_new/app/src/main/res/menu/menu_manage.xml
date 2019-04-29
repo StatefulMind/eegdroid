@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="de.uni_osnabrueck.ikw.eegdroid">
+
+    <item android:id="@+id/send_session"
+        android:icon="@drawable/ic_send_white_24dp"
+        android:title="@string/menu_manage_send"
+        app:showAsAction="always"/>
+
+    <item android:id="@+id/rename_session"
+        android:icon="@drawable/ic_mode_edit_white_24dp"
+        android:title="@string/menu_manage_rename"
+        app:showAsAction="always"/>
+
+    <item android:id="@+id/delete_session"
+        android:icon="@drawable/ic_delete_white_24dp"
+        android:title="@string/menu_manage_delete"
+        app:showAsAction="always"/>
+</menu>
