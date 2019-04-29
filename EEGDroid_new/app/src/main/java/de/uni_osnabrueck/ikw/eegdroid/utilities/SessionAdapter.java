@@ -6,7 +6,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,15 +33,14 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetViewHolder> {
 
     File[] fileList;
-    private int selectedPosition = -1;
-
     public SessionAdapter(File[] fileList, Context context) {
         this.fileList = fileList;
     }
+    private int selectedPos = RecyclerView.NO_POSITION;
 
     @Override
     public SessionAdapter.PlanetViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v= LayoutInflater.from(parent.getContext()).inflate(R.layout.session_row,parent,false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.session_row,parent,false);
         PlanetViewHolder viewHolder = new PlanetViewHolder(v);
         return viewHolder;
     }
@@ -64,34 +65,33 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
         holder.date.setText(creationTime.toLocalDate().toString());
         holder.hour.setText(creationTime.toLocalTime().toString());
 
-        if(selectedPosition==position)
-            holder.itemView.setBackgroundColor(Color.LTGRAY);
-        else
-            holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        holder.itemView.setSelected(selectedPos == position);
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                selectedPosition = position;
-                notifyDataSetChanged();
-
-                Log.d("wololo", fileList[selectedPosition].getPath());
+            public void onClick(View view) {
+                Log.d("woka", fileList[position].getName());
+                notifyItemChanged(selectedPos);
+                selectedPos = position;
+                notifyItemChanged(selectedPos);
 
             }
         });
-    }
 
+    }
 
     @Override
     public int getItemCount() {
         return fileList.length;
     }
 
-    public static class PlanetViewHolder extends RecyclerView.ViewHolder{
+    public static class PlanetViewHolder extends RecyclerView.ViewHolder {
         protected TextView name;
         protected TextView kbs;
         protected TextView date;
         protected TextView hour;
+
+        public LinearLayout linearLayout;
 
         public PlanetViewHolder(View itemView) {
             super(itemView);
@@ -99,6 +99,10 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
             kbs = (TextView) itemView.findViewById(R.id.session_kbs);
             date = (TextView) itemView.findViewById(R.id.session_date);
             hour = (TextView) itemView.findViewById(R.id.session_hour);
+            linearLayout = (LinearLayout) itemView.findViewById(R.id.linear_layout_session_row);
+
         }
+
     }
+
 }
