@@ -82,27 +82,17 @@ public class ManageSessions extends AppCompatActivity {
 //                newGame();
                 return true;
             case R.id.rename_session:
+//                int position = adapter.getSelectedPos();
+//                arrayListOfFiles.get(position).renameTo();
+
 //                showHelp();
                 return true;
             case R.id.delete_session:
-//                showHelp();
-//                int position = adapter.getSelectedPos();
-
-//                listOfFiles[position].delete(); //Deletes the file
-//                listOfFiles = ArrayUtils.removeElement(listOfFiles, position);
-//                recyclerView.removeViewAt(position);
-//                adapter.notifyItemRemoved(position);
-//                adapter.notifyItemRangeChanged(position, listOfFiles.length);
-//
-//                readDirectory(MainActivity.getDirSessions());
-
-//                adapter.notifyDataSetChanged();
-//                adapter.resetSelectedPos();
-//
-//                arrayOfFiles = ArrayUtils.removeElement(arrayOfFiles, position);
-//                adapter.notifyItemRemoved(position);
-
-
+                int position = adapter.getSelectedPos();
+                arrayListOfFiles.get(position).delete();
+                arrayListOfFiles.remove(position);
+                adapter.notifyItemRemoved(position);
+                adapter.resetSelectedPos();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
