@@ -1,42 +1,33 @@
 package de.uni_osnabrueck.ikw.eegdroid.utilities;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.recyclerview.widget.RecyclerView;
-
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 import de.uni_osnabrueck.ikw.eegdroid.R;
 
-import static androidx.constraintlayout.widget.Constraints.TAG;
+
 
 public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetViewHolder> {
 
-    File[] fileList;
-    public SessionAdapter(File[] fileList, Context context) {
-        this.fileList = fileList;
-    }
+    ArrayList<File> arrayListFiles;
+    public SessionAdapter(ArrayList<File> arrayListFiles, Context context) { this.arrayListFiles = arrayListFiles; }
     private int selectedPos = RecyclerView.NO_POSITION;
+
+
 
     @Override
     public SessionAdapter.PlanetViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -49,7 +40,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
     public void onBindViewHolder(SessionAdapter.PlanetViewHolder holder, final int position) {
 
         BasicFileAttributes attrs;
-        Path path = fileList[position].toPath();
+        Path path = arrayListFiles.get(position).toPath();
 
         try {
             attrs = Files.readAttributes(path, BasicFileAttributes.class);
@@ -57,7 +48,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
             attrs = null;
         }
 
-        holder.name.setText(fileList[position].getName());
+        holder.name.setText(arrayListFiles.get(position).getName());
         float kbs = attrs.size() / 1000;
         holder.kbs.setText(Float.toString(kbs));
 
@@ -65,12 +56,13 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
         holder.date.setText(creationTime.toLocalDate().toString());
         holder.hour.setText(creationTime.toLocalTime().toString());
 
+        //This handles the selection of an item in the list
         holder.itemView.setSelected(selectedPos == position);
 
         holder.linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("woka", fileList[position].getName());
+                Log.d("Position = ", Integer.toString(position));
                 notifyItemChanged(selectedPos);
                 selectedPos = position;
                 notifyItemChanged(selectedPos);
@@ -82,8 +74,12 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
 
     @Override
     public int getItemCount() {
-        return fileList.length;
+        return arrayListFiles.size();
     }
+
+    public int getSelectedPos() { return selectedPos; }
+
+    public void resetSelectedPos() { selectedPos = RecyclerView.NO_POSITION; }
 
     public static class PlanetViewHolder extends RecyclerView.ViewHolder {
         protected TextView name;
@@ -100,9 +96,8 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
             date = (TextView) itemView.findViewById(R.id.session_date);
             hour = (TextView) itemView.findViewById(R.id.session_hour);
             linearLayout = (LinearLayout) itemView.findViewById(R.id.linear_layout_session_row);
-
         }
-
     }
+
 
 }

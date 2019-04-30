@@ -15,8 +15,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import de.uni_osnabrueck.ikw.eegdroid.utilities.SessionAdapter;
 
@@ -24,15 +27,11 @@ public class ManageSessions extends AppCompatActivity {
 
     //List <Files> to save the current state directory
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
+    private SessionAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
     private String dirSessions;
-    private File[] listOfFiles;
+    private ArrayList<File> arrayListOfFiles;
     private DividerItemDecoration mDividerItemDecoration;
-    private Boolean manageMode = false;
-    private View.OnClickListener onClickListener;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +43,9 @@ public class ManageSessions extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new SessionAdapter(listOfFiles, getApplicationContext());
+        adapter = new SessionAdapter(arrayListOfFiles, getApplicationContext());
         recyclerView.setAdapter(adapter);
+
 
         // Add line between items of RecyclerView
         mDividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), 1);
@@ -54,20 +54,29 @@ public class ManageSessions extends AppCompatActivity {
         // Receive the directory of the EEG Sessions
         Intent intent = getIntent();
         dirSessions = intent.getExtras().getString("dirString");
-        listOfFiles = new File(dirSessions).listFiles();
+
+
+
     }
 
+    @Override
+    protected void onResume(){
+        super.onResume();
+        //while(true){Log.d("status", "onResume");}
+    }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_manage, menu);
+        //menu.setGroupVisible(0,false); //Hides the menu while no session is selected
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
+
         switch (item.getItemId()) {
             case R.id.send_session:
 //                newGame();
@@ -77,6 +86,23 @@ public class ManageSessions extends AppCompatActivity {
                 return true;
             case R.id.delete_session:
 //                showHelp();
+//                int position = adapter.getSelectedPos();
+
+//                listOfFiles[position].delete(); //Deletes the file
+//                listOfFiles = ArrayUtils.removeElement(listOfFiles, position);
+//                recyclerView.removeViewAt(position);
+//                adapter.notifyItemRemoved(position);
+//                adapter.notifyItemRangeChanged(position, listOfFiles.length);
+//
+//                readDirectory(MainActivity.getDirSessions());
+
+//                adapter.notifyDataSetChanged();
+//                adapter.resetSelectedPos();
+//
+//                arrayOfFiles = ArrayUtils.removeElement(arrayOfFiles, position);
+//                adapter.notifyItemRemoved(position);
+
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -91,7 +117,7 @@ public class ManageSessions extends AppCompatActivity {
 
     //Returns a list of recordings in directory
     public void readDirectory(File dir){
-        listOfFiles = dir.listFiles();
+        arrayListOfFiles = new ArrayList<>(Arrays.asList(dir.listFiles()));
         //Add if here?
     }
 
