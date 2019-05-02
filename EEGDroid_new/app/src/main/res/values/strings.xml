@@ -158,6 +158,12 @@
     <string name="menu_manage_delete">Delete</string>
 
 
+    <string name="confirmation_delete">Do you want to delete</string>
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+    <string name="dialog_title">Please confirm</string>
+
+
 
 
 </resources>

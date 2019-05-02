@@ -1,25 +1,23 @@
 package de.uni_osnabrueck.ikw.eegdroid;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Toast;
 
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.Random;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import android.text.TextUtils;
 
 import de.uni_osnabrueck.ikw.eegdroid.utilities.SessionAdapter;
 
@@ -55,8 +53,6 @@ public class ManageSessions extends AppCompatActivity {
         Intent intent = getIntent();
         dirSessions = intent.getExtras().getString("dirString");
 
-
-
     }
 
     @Override
@@ -77,23 +73,52 @@ public class ManageSessions extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
 
+        final int position = adapter.getSelectedPos();
+
+
         switch (item.getItemId()) {
             case R.id.send_session:
 //                newGame();
                 return true;
             case R.id.rename_session:
-//                int position = adapter.getSelectedPos();
-//                arrayListOfFiles.get(position).renameTo();
 
-//                showHelp();
-                return true;
-            case R.id.delete_session:
-                int position = adapter.getSelectedPos();
-                arrayListOfFiles.get(position).delete();
-                arrayListOfFiles.remove(position);
-                adapter.notifyItemRemoved(position);
+                //Add here dialog to take the new name
+                //Prevent someone to call it the same
+                //Keep date and time
+                final String renamedName;
+                String child = Integer.toString(new Random().nextInt(505));
+                File newName = new File(dirSessions, "renamed"+child+".csv");
+                arrayListOfFiles.get(position).renameTo(newName);
+                arrayListOfFiles.set(position, newName);
+                adapter.notifyItemChanged(position);
                 adapter.resetSelectedPos();
                 return true;
+
+            case R.id.delete_session:
+
+                //Handles the Dialog to confirm the file delete
+                AlertDialog.Builder alert = new AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_title)
+                        .setMessage(getResources().getString(R.string.confirmation_delete)+ " " + arrayListOfFiles.get(position).getName() + "?" );
+                alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        arrayListOfFiles.get(position).delete();
+                        arrayListOfFiles.remove(position);
+                        adapter.notifyItemRemoved(position);
+                        adapter.resetSelectedPos();
+                    }
+                });
+                alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // close dialog
+                        dialog.cancel();
+                    }
+                });
+                alert.show();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
