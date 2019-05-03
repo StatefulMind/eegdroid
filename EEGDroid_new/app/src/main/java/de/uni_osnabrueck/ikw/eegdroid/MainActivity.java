@@ -8,6 +8,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import com.google.android.material.navigation.NavigationView;
 
@@ -46,7 +47,8 @@ public class MainActivity extends AppCompatActivity
         // File object to save the directory to save the EEG recordings
         dirSessions = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + nameDir);
         ManageSessions.createDirectory(dirSessions);
-        dirUri = Uri.parse(Environment.getExternalStorageDirectory() + "/sessions_EEG/"); //Uri to open the folder with sessions
+        dirUri = Uri.parse(Environment.getExternalStorageDirectory() + "/sessions_EEG/"); //Uri to open the folder with sessions //ToDo Make relative
+        Log.d("Main", dirUri.getPath());
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -129,11 +131,6 @@ public class MainActivity extends AppCompatActivity
             }
 
         } else if (id == R.id.display) {
-            Intent intent = new Intent(this, ManageSessions.class);
-            intent.putExtra("dirString", dirSessions.getPath());
-            startActivity(intent);
-
-        } else if (id == R.id.manage) {
 
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(dirUri, "resource/folder");
@@ -146,6 +143,11 @@ public class MainActivity extends AppCompatActivity
                 Intent intent1 = Intent.createChooser(intent, "Open With");
                 startActivity(intent1);
             }
+
+        } else if (id == R.id.manage) {
+            Intent intent = new Intent(this, ManageSessions.class);
+            intent.putExtra("dirString", dirSessions.getPath());
+            startActivity(intent);
 
         } else if (id == R.id.tfanalysis) {
             Intent intent = new Intent(this, TFAnalysis.class);
@@ -164,9 +166,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public static File getDirSessions(){
-        return dirSessions;
-    }
+    public static File getDirSessions() { return dirSessions; }
 
 
 

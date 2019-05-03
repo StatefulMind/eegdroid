@@ -157,13 +157,16 @@
     <string name="menu_manage_rename">Rename</string>
     <string name="menu_manage_delete">Delete</string>
 
-
     <string name="confirmation_delete">Do you want to delete</string>
     <string name="yes">Yes</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_title">Please confirm</string>
 
-
+    <string name="rename">Rename</string>
+    <string name="ask_new_name">Please enter new name for</string>
+    <string name="new_name">new_name</string>
+    <string name="rename_title">Rename EEG session</string>
+    <string name="warning_rename">There is already a session with this name. Please select another name.</string>
 
 
 </resources>
