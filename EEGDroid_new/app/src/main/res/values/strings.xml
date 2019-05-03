@@ -167,6 +167,7 @@
     <string name="new_name">new_name</string>
     <string name="rename_title">Rename EEG session</string>
     <string name="warning_rename">There is already a session with this name. Please select another name.</string>
+    <string name="warning_select_session">Please select a session first.</string>
 
 
 </resources>
